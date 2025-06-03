@@ -65,7 +65,7 @@ export default function ScannerStockApp() {
             target: scannerRef.current,
             constraints: { facingMode: "environment" },
           },
-          decoder: { readers: ["ean_reader", "upc_reader"] },
+          decoder: { readers: ["ean_reader", "ean_8_reader","upc_reader"] },
           locate: true,
         },
         (err) => {
