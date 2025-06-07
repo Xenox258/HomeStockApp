@@ -58,8 +58,15 @@ export const StockProvider = ({ children }) => {
     });
   };
 
+  // Ajout de la fonction manquante removeFromStock
   const removeFromStock = (code) => {
     setStock((prevStock) => prevStock.filter((p) => p.code !== code));
+  };
+
+  const removeFromIdealStock = (productName) => {
+    setIdealStock((prevIdealStock) => 
+      prevIdealStock.filter((p) => p.nom !== productName)
+    );
   };
 
   return (
@@ -71,6 +78,7 @@ export const StockProvider = ({ children }) => {
         updateStock,
         removeFromStock,
         setIdealStockForProduct,
+        removeFromIdealStock,
         normalizeProductName,
       }}
     >

@@ -1,0 +1,442 @@
+.scanner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.scanner-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.scanner-title {
+  color: #333;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.scan-button {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  margin-bottom: 2rem;
+}
+
+.scan-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.scan-button.scanning {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4); }
+  50% { box-shadow: 0 6px 25px rgba(255, 107, 107, 0.8); }
+  100% { box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4); }
+}
+
+.scanner-viewport {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  border-radius: 15px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.scanner-area {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border-radius: 15px;
+}
+
+.scanner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.scanner-frame {
+  width: 250px;
+  height: 100px;
+  border: 3px solid #00ff88;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+  animation: scan-line 2s ease-in-out infinite;
+  transition: all 0.5s ease;
+}
+
+@keyframes scan-line {
+  0%, 100% { border-color: #00ff88; }
+  50% { border-color: #ff6b6b; }
+}
+
+.scanner-frame.inactive {
+  border-color: #6b7280;
+  box-shadow: 0 0 20px rgba(107, 114, 128, 0.3);
+  animation: none;
+}
+
+.scanner-instructions {
+  color: white;
+  margin-top: 1rem;
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  min-height: 1.5rem; /* Évite les sauts de hauteur */
+}
+
+.product-confirmation {
+  background: linear-gradient(135deg, #f8f9ff, #e8f5e8);
+  border: 2px solid #00ff88;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  position: relative;
+  z-index: 10;
+  animation: slideInFromTop 0.4s ease-out;
+}
+
+.product-confirmation h3 {
+  color: #22c55e;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.product-input {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  margin: 1rem 0;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.product-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn-confirm, .btn-cancel {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+}
+
+.btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+}
+
+.btn-cancel {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.btn-cancel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+/* Compteur de tentatives */
+.attempts-counter {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: center;
+  animation: slideInFromTop 0.4s ease-out;
+  position: relative;
+  z-index: 5; /* Au-dessus du scanner mais en dessous des modales */
+}
+
+.attempts-counter p {
+  margin: 0.25rem 0;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.attempts-counter p:first-child {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Message de chargement */
+.loading-message {
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.95), rgba(179, 229, 252, 0.95));
+  border: 2px solid #0288d1;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: center;
+  display: flex;
+  flex-direction: row; /* Horizontal pour être moins encombrant */
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  backdrop-filter: blur(5px);
+  position: relative;
+  z-index: 5;
+}
+
+.loading-spinner {
+  width: 30px; /* Plus petit */
+  height: 30px;
+  border: 3px solid #e3f2fd;
+  border-top: 3px solid #0288d1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-message p {
+  margin: 0;
+  color: #01579b;
+  font-weight: 600;
+}
+
+/* Confirmation avec variantes */
+.product-confirmation.success {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 2px solid #22c55e;
+}
+
+.product-confirmation.success h3 {
+  color: #15803d;
+}
+
+.product-confirmation.error {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 2px solid #ef4444;
+}
+
+.product-confirmation.error h3 {
+  color: #dc2626;
+}
+
+.product-confirmation.error p {
+  color: #7f1d1d;
+  margin: 0.5rem 0;
+}
+
+.product-confirmation.error p:nth-of-type(3) {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+/* Message d'erreur scanner */
+.scanner-error {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 2px solid #ef4444;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  text-align: center;
+  animation: slideInFromTop 0.4s ease-out;
+}
+
+.scanner-error h3 {
+  color: #dc2626;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.scanner-error p {
+  color: #7f1d1d;
+  margin: 0.5rem 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.btn-retry {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-retry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+/* Indicateur discret pour le scan actif */
+.scan-info {
+  background: linear-gradient(135deg, #e0f2fe, #b3e5fc);
+  border: 2px solid #0288d1;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: center;
+  animation: slideInFromTop 0.4s ease-out;
+}
+
+.scan-info p {
+  margin: 0 0 1rem 0;
+  color: #01579b;
+  font-weight: 500;
+}
+
+.btn-add-manual {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.btn-add-manual:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* Confirmation manuelle */
+.product-confirmation.manual {
+  background: linear-gradient(135deg, #fefbf3, #fef3c7);
+  border: 2px solid #f59e0b;
+}
+
+.product-confirmation.manual h3 {
+  color: #92400e;
+}
+
+.product-confirmation.manual p {
+  color: #78350f;
+}
+
+/* Bouton désactivé amélioré */
+.btn-confirm:disabled {
+  background: linear-gradient(135deg, #9ca3af, #6b7280);
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Responsive pour les boutons d'erreur */
+@media (max-width: 480px) {
+  .error-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .btn-manual,
+  .btn-continue {
+    width: 100%;
+  }
+}
+
+/* Animation pour le message d'erreur */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-15px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Auto-fade pour le message d'erreur */
+@keyframes autoFade {
+  0%, 80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+.error-message {
+  animation: slideInFromTop 0.4s ease-out, autoFade 2s ease-out;
+}
+
+/* Responsive amélioré pour la version fluide */
+@media (max-width: 768px) {
+  .loading-message {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+  
+  .loading-spinner {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .attempts-counter {
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+  }
+  
+  .error-message {
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+  
+  .error-actions {
+    margin-top: 1rem;
+  }
+  
+  .btn-manual {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+  }
+}

@@ -1,19 +1,21 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect, useContext, useCallback } from "react";
 import Quagga from "@ericblade/quagga2";
 import { StockContext } from './StockContext';
+import './CSS/ScannerStockApp.css';
 
 export default function ScannerStockApp() {
+  const scanAttemptsRef = useRef(0);
+  const lastDetectedCodeRef = useRef(null);
   const [scanning, setScanning] = useState(false);
   const [pendingProduct, setPendingProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const scannerRef = useRef(null);
   const quaggaStartedRef = useRef(false);
   const { addToStock } = useContext(StockContext);
 
   async function fetchProductName(code) {
     try {
-      const res = await fetch(
-        `https://world.openfoodfacts.org/api/v0/product/${code}.json`
-      );
+      const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
       if (!res.ok) return null;
       const data = await res.json();
       if (data.status === 1 && data.product && data.product.product_name) {
@@ -25,29 +27,49 @@ export default function ScannerStockApp() {
     }
   }
 
-  const onDetected = async (result) => {
+  const onDetected = useCallback(async (result) => {
     if (!result || !result.codeResult) return;
     const code = result.codeResult.code;
-    if (!code) return;
+    if (!code || isLoading || pendingProduct) return;
 
-    if (quaggaStartedRef.current) {
-      Quagga.offDetected(onDetected);
-      Quagga.stop();
-      quaggaStartedRef.current = false;
-      setScanning(false);
+    if (lastDetectedCodeRef.current !== code) {
+      lastDetectedCodeRef.current = code;
+      scanAttemptsRef.current = 1;
+    } else {
+      scanAttemptsRef.current += 1;
     }
 
-    const vraiNom = (await fetchProductName(code)) || `Produit ${code}`;
-    setPendingProduct({ code, nom: vraiNom });
-  };
+    setIsLoading(true);
+
+    const productName = await fetchProductName(code);
+
+    if (productName) {
+      setPendingProduct({ code, nom: productName, found: true });
+    } else if (scanAttemptsRef.current >= 5) {
+      setPendingProduct({ code, nom: "", found: false });
+    }
+
+    setIsLoading(false);
+  }, [isLoading, pendingProduct]);
 
   const confirmAdd = () => {
-    addToStock(pendingProduct);
-    setPendingProduct(null);
+    if (pendingProduct.nom.trim()) {
+      addToStock({
+        code: pendingProduct.code,
+        nom: pendingProduct.nom.trim()
+      });
+    }
+    resetScannerState();
   };
 
   const cancelAdd = () => {
+    resetScannerState();
+  };
+
+  const resetScannerState = () => {
     setPendingProduct(null);
+    lastDetectedCodeRef.current = null;
+    scanAttemptsRef.current = 0;
   };
 
   const onNomChange = (e) => {
@@ -65,7 +87,7 @@ export default function ScannerStockApp() {
             target: scannerRef.current,
             constraints: { facingMode: "environment" },
           },
-          decoder: { readers: ["ean_reader", "ean_8_reader","upc_reader"] },
+          decoder: { readers: ["ean_reader", "ean_8_reader", "upc_reader"] },
           locate: true,
         },
         (err) => {
@@ -85,9 +107,6 @@ export default function ScannerStockApp() {
         Quagga.stop();
         quaggaStartedRef.current = false;
       }
-      if (scannerRef.current) {
-        scannerRef.current.innerHTML = "";
-      }
     }
 
     return () => {
@@ -99,72 +118,71 @@ export default function ScannerStockApp() {
     };
   }, [scanning]);
 
+  // 🔴 GÈRE L'ÉCOUTE SELON `pendingProduct`
+  useEffect(() => {
+    if (!quaggaStartedRef.current) return;
+
+    if (pendingProduct) {
+      Quagga.offDetected(onDetected);
+    } else {
+      Quagga.onDetected(onDetected);
+    }
+  }, [pendingProduct, onDetected]);
+
+  const isDetectionActive = scanning && !pendingProduct && !isLoading;
+
   return (
-    <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
-      <h1>Scanner et gestion du stock</h1>
+    <div className="scanner-container">
+      <div className="scanner-card">
+        <h1 className="scanner-title">📱 Scanner et gestion du stock</h1>
 
-      <button
-        onClick={() => setScanning((v) => !v)}
-        style={{
-          padding: "10px 20px",
-          fontSize: 16,
-          cursor: "pointer",
-          marginBottom: 20,
-        }}
-      >
-        {scanning ? "Stopper le scan" : "Démarrer le scan"}
-      </button>
-
-      {scanning && (
-        <div
-          ref={scannerRef}
-          style={{
-            width: "100%",
-            height: 400,
-            border: "2px solid #333",
-            marginBottom: 20,
-            backgroundColor: "#000",
-          }}
-        />
-      )}
-
-      {pendingProduct && (
-        <div
-          style={{
-            background: "#fff",
-            border: "2px solid #333",
-            padding: 20,
-            borderRadius: 8,
-            marginBottom: 20,
-          }}
+        <button
+          onClick={() => setScanning(!scanning)}
+          className={`scan-button ${scanning ? 'scanning' : ''}`}
         >
-          <p>Confirmer l'ajout du produit :</p>
-          <input
-            type="text"
-            value={pendingProduct.nom}
-            onChange={onNomChange}
-            style={{
-              width: "100%",
-              padding: "8px",
-              fontSize: 16,
-              marginBottom: 12,
-              boxSizing: "border-box",
-            }}
-          />
-          <button
-            onClick={confirmAdd}
-            style={{ marginRight: 10, padding: "6px 12px", cursor: "pointer" }}
-          >
-            Confirmer
-          </button>
-          <button
-            onClick={cancelAdd}
-            style={{ padding: "6px 12px", cursor: "pointer" }}
-          >
-            Annuler
-          </button>
-        </div>
-      )}
+          {scanning ? "⏹️ Stopper le scan" : "📷 Démarrer le scan"}
+        </button>
+
+        {scanning && (
+          <div className="scanner-viewport">
+            <div ref={scannerRef} className="scanner-area" />
+            <div className="scanner-overlay">
+              <div className={`scanner-frame ${!isDetectionActive ? 'inactive' : ''}`}></div>
+              <p className="scanner-instructions">
+                {isLoading
+                  ? "🔍 Recherche du produit..."
+                  : pendingProduct
+                    ? pendingProduct.found
+                      ? "✅ Produit trouvé !"
+                      : "📝 Produit non trouvé après 5 essais"
+                    : "Positionnez le code-barres dans le cadre"}
+              </p>
+            </div>
+          </div>
+        )}
+
+
+        {pendingProduct && (
+          <div className={`product-confirmation ${pendingProduct.found ? "success" : "error"}`}>
+            <h3>{pendingProduct.found ? "✅ Produit détecté !" : "❌ Produit non trouvé"}</h3>
+            <p><strong>Code:</strong> {pendingProduct.code}</p>
+            <p>{pendingProduct.found ? "Confirmer l'ajout du produit :" : "Entrez manuellement le nom du produit :"}</p>
+            <input
+              type="text"
+              value={pendingProduct.nom}
+              onChange={onNomChange}
+              className="product-input"
+              placeholder="Nom du produit"
+            />
+            <div className="confirmation-buttons">
+              <button onClick={confirmAdd} className="btn-confirm">✓ Confirmer</button>
+              <button onClick={cancelAdd} className="btn-cancel">✗ Annuler</button>
+            </div>
+          </div>
+        )}
+
+
+      </div>
     </div>
   );
 }
