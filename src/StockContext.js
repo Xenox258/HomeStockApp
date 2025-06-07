@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react';
-import { normalizeProductName, haveCommonStems } from './utils/normalizeProductName';
+import { normalizeProductName, haveCommonStems, matchesShoppingItem } from './utils/normalizeProductName';
 
 export const StockContext = createContext();
 
@@ -25,6 +25,27 @@ export const StockProvider = ({ children }) => {
         return [...prevStock, { ...product, quantite: 1 }];
       }
     });
+
+    // 🎯 NOUVEAU: Vérification automatique avec la liste de courses
+    setIdealStock((prevIdealStock) => {
+      return prevIdealStock.map((idealProduct) => {
+        // Utiliser la nouvelle fonction de matching pour la liste de courses
+        if (matchesShoppingItem(product.nom, idealProduct.nom)) {
+          const currentInStock = stock.find((s) => 
+            haveCommonStems(normalizeProductName(s.nom), normalizeProductName(idealProduct.nom))
+          );
+          const currentQty = currentInStock ? currentInStock.quantite : 0;
+          
+          // Vérifier si on a maintenant assez en stock
+          if (currentQty + 1 >= idealProduct.quantite) {
+            console.log(`📦 Objectif atteint pour "${idealProduct.nom}" grâce à "${product.nom}"`);
+          } else {
+            console.log(`📈 Progression pour "${idealProduct.nom}": ${currentQty + 1}/${idealProduct.quantite}`);
+          }
+        }
+        return idealProduct;
+      });
+    });
   };
 
   const setIdealStockForProduct = (nom, quantite) => {
@@ -46,19 +67,20 @@ export const StockProvider = ({ children }) => {
     });
   };
 
-  const updateStock = (code, newQuantity) => {
+  const updateStock = (code, newQuantity, newName) => {
     setStock((prevStock) => {
       if (newQuantity <= 0) {
         return prevStock.filter((p) => p.code !== code);
       } else {
         return prevStock.map((p) =>
-          p.code === code ? { ...p, quantite: newQuantity } : p
+          p.code === code 
+            ? { ...p, quantite: newQuantity, nom: newName || p.nom } 
+            : p
         );
       }
     });
   };
 
-  // Ajout de la fonction manquante removeFromStock
   const removeFromStock = (code) => {
     setStock((prevStock) => prevStock.filter((p) => p.code !== code));
   };
@@ -80,6 +102,7 @@ export const StockProvider = ({ children }) => {
         setIdealStockForProduct,
         removeFromIdealStock,
         normalizeProductName,
+        matchesShoppingItem, // 🆕 Exporter la nouvelle fonction
       }}
     >
       {children}

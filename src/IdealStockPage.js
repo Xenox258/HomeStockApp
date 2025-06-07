@@ -1,9 +1,10 @@
 import React, { useContext, useState } from 'react';
 import { StockContext } from './StockContext';
+import { matchesShoppingItem, normalizeProductName, haveCommonStems } from './utils/normalizeProductName';
 import './CSS/IdealStockPage.css';
 
 export default function IdealStockPage() {
-  const { idealStock, setIdealStockForProduct, removeFromIdealStock } = useContext(StockContext);
+  const { stock, idealStock, setIdealStockForProduct, removeFromIdealStock } = useContext(StockContext);
   const [nom, setNom] = useState('');
   const [quantite, setQuantite] = useState(1);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -37,6 +38,25 @@ export default function IdealStockPage() {
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer "${productName}" du stock cible ?`)) {
       removeFromIdealStock(productName);
     }
+  };
+
+  // 🆕 Fonction pour obtenir le statut de chaque produit
+  const getProductStatus = (idealProduct) => {
+    const currentProduct = stock.find((p) => 
+      matchesShoppingItem(p.nom, idealProduct.nom) ||
+      haveCommonStems(normalizeProductName(p.nom), normalizeProductName(idealProduct.nom))
+    );
+    
+    const currentQuantite = currentProduct ? currentProduct.quantite : 0;
+    const isComplete = currentQuantite >= idealProduct.quantite;
+    const percentageComplete = Math.min(100, Math.round((currentQuantite / idealProduct.quantite) * 100));
+    
+    return {
+      currentQuantite,
+      isComplete,
+      percentageComplete,
+      matchedProduct: currentProduct
+    };
   };
 
   return (
@@ -97,62 +117,90 @@ export default function IdealStockPage() {
           </div>
         ) : (
           <div className="products-grid">
-            {idealStock.map((product) => (
-              <div key={product.nom} className="product-card">
-                <div className="product-header">
-                  <div className="product-info">
-                    <h3 className="product-name">{product.nom}</h3>
+            {idealStock.map((product) => {
+              const status = getProductStatus(product);
+              
+              return (
+                <div key={product.nom} className={`product-card ${status.isComplete ? 'complete' : 'incomplete'}`}>
+                  <div className="product-header">
+                    <div className="product-info">
+                      <h3 className="product-name">{product.nom}</h3>
+                      {/* 🆕 Affichage du statut actuel */}
+                      <div className="product-status">
+                        <div className="status-text">
+                          <span className="current-stock">📦 Stock: {status.currentQuantite}</span>
+                          <span className="target-stock">🎯 Objectif: {product.quantite}</span>
+                        </div>
+                        {status.matchedProduct && (
+                          <div className="matched-product">
+                            <span style={{ fontSize: '0.8em', color: '#666', fontStyle: 'italic' }}>
+                              via "{status.matchedProduct.nom}"
+                            </span>
+                          </div>
+                        )}
+                        {/* Barre de progression */}
+                        <div className="progress-bar">
+                          <div 
+                            className={`progress-fill ${status.isComplete ? 'complete' : 'incomplete'}`}
+                            style={{ width: `${status.percentageComplete}%` }}
+                          ></div>
+                        </div>
+                        <div className="progress-text">
+                          {status.percentageComplete}% ({status.currentQuantite}/{product.quantite})
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`status-badge ${status.isComplete ? 'complete' : 'incomplete'}`}>
+                      {status.isComplete ? '✅' : '⏳'}
+                    </div>
                   </div>
-                  <div className="quantity-badge">
-                    {product.quantite}
-                  </div>
+                  
+                  {editingProduct === product.nom ? (
+                    <div className="edit-section">
+                      <div className="quantity-input-container">
+                        <label>Nouvelle quantité cible :</label>
+                        <input
+                          type="number"
+                          value={editQuantity}
+                          onChange={(e) => setEditQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                          min="1"
+                          className="quantity-input"
+                        />
+                      </div>
+                      <div className="edit-buttons">
+                        <button 
+                          onClick={() => handleSave(product.nom)}
+                          className="btn btn-save"
+                        >
+                          ✓ Sauvegarder
+                        </button>
+                        <button 
+                          onClick={handleCancel}
+                          className="btn btn-cancel"
+                        >
+                          ✗ Annuler
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="action-buttons">
+                      <button 
+                        onClick={() => handleEdit(product)}
+                        className="btn btn-edit"
+                      >
+                        ✏️ Modifier
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(product.nom)}
+                        className="btn btn-delete"
+                      >
+                        🗑️ Supprimer
+                      </button>
+                    </div>
+                  )}
                 </div>
-                
-                {editingProduct === product.nom ? (
-                  <div className="edit-section">
-                    <div className="quantity-input-container">
-                      <label>Nouvelle quantité cible :</label>
-                      <input
-                        type="number"
-                        value={editQuantity}
-                        onChange={(e) => setEditQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                        min="1"
-                        className="quantity-input"
-                      />
-                    </div>
-                    <div className="edit-buttons">
-                      <button 
-                        onClick={() => handleSave(product.nom)}
-                        className="btn btn-save"
-                      >
-                        ✓ Sauvegarder
-                      </button>
-                      <button 
-                        onClick={handleCancel}
-                        className="btn btn-cancel"
-                      >
-                        ✗ Annuler
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="action-buttons">
-                    <button 
-                      onClick={() => handleEdit(product)}
-                      className="btn btn-edit"
-                    >
-                      ✏️ Modifier
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(product.nom)}
-                      className="btn btn-delete"
-                    >
-                      🗑️ Supprimer
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

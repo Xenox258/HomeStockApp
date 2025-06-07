@@ -1,19 +1,18 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { StockContext } from './StockContext';
+import { matchesShoppingItem, normalizeProductName, haveCommonStems } from './utils/normalizeProductName';
 import './CSS/ShoppingListPage.css';
 
 export default function ShoppingListPage() {
   const { stock, idealStock } = useContext(StockContext);
-  const { normalizeProductName, haveCommonStems } = require('./utils/normalizeProductName');
 
   const shoppingList = idealStock.map((idealProduct) => {
-    const normalizedIdeal = normalizeProductName(idealProduct.nom);
-
-    const currentProduct = stock.find((p) => {
-      const normalizedStock = normalizeProductName(p.nom);
-      return haveCommonStems(normalizedStock, normalizedIdeal);
-    });
+    // 🎯 Utiliser la nouvelle fonction de matching
+    const currentProduct = stock.find((p) => 
+      matchesShoppingItem(p.nom, idealProduct.nom) ||
+      haveCommonStems(normalizeProductName(p.nom), normalizeProductName(idealProduct.nom))
+    );
 
     const currentQuantite = currentProduct ? currentProduct.quantite : 0;
     const neededQuantite = Math.max(0, idealProduct.quantite - currentQuantite);
@@ -28,9 +27,10 @@ export default function ShoppingListPage() {
       ...idealProduct, 
       currentQuantite, 
       neededQuantite, 
-      priority 
+      priority,
+      matchedProduct: currentProduct // Pour debug/affichage
     };
-  }).filter((product) => product.neededQuantite > 0);
+  }).filter((product) => product.neededQuantite > 0); // 🎯 Ne garder que ceux qui manquent
 
   const totalItems = shoppingList.length;
   const totalNeeded = shoppingList.reduce((sum, item) => sum + item.neededQuantite, 0);
@@ -111,6 +111,12 @@ export default function ShoppingListPage() {
                       <div className="shopping-item-details">
                         <div className="current-stock">
                           📦 En stock: {product.currentQuantite}
+                          {/* 🆕 Affichage du produit matché pour debug */}
+                          {product.matchedProduct && (
+                            <span style={{ fontSize: '0.8em', color: '#666', fontStyle: 'italic' }}>
+                              {" "}(via "{product.matchedProduct.nom}")
+                            </span>
+                          )}
                         </div>
                         <div className="target-stock">
                           🎯 Objectif: {product.quantite}

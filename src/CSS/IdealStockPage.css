@@ -110,6 +110,10 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
+  z-index: 10; /* Priorité élevée pour rester au-dessus */
+  background: white; /* Fond blanc pour masquer ce qui passe derrière */
+  padding: 0.5rem 0; /* Un peu d'espace pour le fond */
 }
 
 .product-count {
@@ -150,6 +154,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
+  margin-top: 1rem; /* Espacement supplémentaire après le titre */
+  position: relative;
+  z-index: 1; /* Sous le titre */
 }
 
 .product-card {
@@ -158,12 +165,16 @@
   border-radius: 15px;
   padding: 1.5rem;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: visible; /* Permettre l'affichage du contenu mais contrôler le débordement */
+  max-width: 100%; /* Ne pas dépasser la largeur disponible */
 }
 
 .product-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   border-color: #667eea;
+  z-index: 5; /* Légèrement au-dessus des autres cartes mais sous les titres */
 }
 
 .product-header {
@@ -185,15 +196,16 @@
 }
 
 .quantity-badge {
-  background: linear-gradient(135deg, #ffd700, #ffb347);
-  color: #333;
+  /* Remplacé par status-badge, mais gardé pour compatibilité */
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
   font-weight: 700;
   font-size: 1.1rem;
   padding: 0.5rem 1rem;
   border-radius: 20px;
   min-width: 40px;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
 }
 
 /* Section d'édition */
@@ -287,29 +299,130 @@
   box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
 }
 
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+/* 🆕 Nouveaux styles pour l'affichage du statut */
+.product-status {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  position: relative; /* Ajouté pour contrôler le z-index */
+  z-index: 1; /* S'assurer qu'il reste en dessous des titres */
+}
+
+.status-text {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.current-stock {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.target-stock {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.matched-product {
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* Barre de progression */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+  position: relative; /* Contrôler le positionnement */
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  position: relative; /* Éviter tout débordement bizarre */
+}
+
+.progress-fill.complete {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.progress-fill.incomplete {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Badge de statut à droite */
+.status-badge {
+  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid;
+  transition: all 0.3s ease;
+}
+
+.status-badge.complete {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border-color: #22c55e;
+  color: #15803d;
+}
+
+.status-badge.incomplete {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+/* Cartes avec statut */
+.product-card.complete {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border-color: #22c55e;
+}
+
+.product-card.incomplete {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border-color: #f59e0b;
+}
+
+.product-card.complete:hover {
+  border-color: #16a34a;
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2);
+}
+
+.product-card.incomplete:hover {
+  border-color: #d97706;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.2);
+}
+
+/* Animation pour les badges */
+.status-badge.complete {
+  animation: completeGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes completeGlow {
+  0% {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  100% {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.6), 0 0 30px rgba(34, 197, 94, 0.3);
   }
-}
-
-.product-card {
-  animation: fadeInUp 0.5s ease forwards;
-}
-
-.add-product-card {
-  animation: fadeInUp 0.3s ease forwards;
-}
-
-.ideal-stock-list {
-  animation: fadeInUp 0.5s ease forwards;
-  animation-delay: 0.2s;
 }
 
 /* Responsive */
@@ -318,36 +431,50 @@
     padding: 1rem;
   }
   
-  .ideal-stock-title {
-    font-size: 2rem;
+  .ideal-stock-list {
+    padding: 1.5rem; /* Moins de padding sur mobile */
+    margin-top: 1rem; /* Espacement du haut */
   }
   
-  .add-product-form {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .list-title {
+    font-size: 1.3rem; /* Plus petit sur mobile */
+    margin-bottom: 1.5rem; /* Moins d'espace en bas */
+    padding: 0.25rem 0; /* Moins de padding */
   }
   
   .products-grid {
     grid-template-columns: 1fr;
+    gap: 1rem; /* Moins d'espace entre les cartes */
+    margin-top: 0.5rem; /* Moins d'espace après le titre */
   }
   
-  .action-buttons,
-  .edit-buttons {
-    flex-direction: column;
+  .product-card {
+    padding: 1rem; /* Moins de padding dans les cartes */
+  }
+  
+  .product-status {
+    padding: 0.75rem; /* Moins de padding */
+    margin-top: 0.75rem; /* Moins de marge */
   }
 }
 
 @media (max-width: 480px) {
-  .ideal-stock-title {
-    font-size: 1.5rem;
+  .list-title {
+    font-size: 1.2rem;
+    flex-direction: column; /* Stack vertical sur très petits écrans */
+    align-items: flex-start;
+    gap: 0.25rem;
   }
   
-  .add-product-card,
+  .product-count {
+    align-self: flex-start; /* Alignement à gauche */
+  }
+  
   .ideal-stock-list {
-    padding: 1.5rem;
+    padding: 1rem;
   }
   
-  .empty-state {
-    padding: 2rem 1rem;
+  .products-grid {
+    margin-top: 0;
   }
 }
