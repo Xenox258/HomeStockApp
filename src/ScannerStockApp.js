@@ -4,6 +4,9 @@ import { StockContext } from './StockContext';
 import './CSS/ScannerStockApp.css';
 
 export default function ScannerStockApp() {
+  const ignoredCodesRef = useRef(new Set());
+  const codeAttemptsRef = useRef({});
+
   const scanAttemptsRef = useRef(0);
   const lastDetectedCodeRef = useRef(null);
   const [scanning, setScanning] = useState(false);
@@ -30,14 +33,9 @@ export default function ScannerStockApp() {
   const onDetected = useCallback(async (result) => {
     if (!result || !result.codeResult) return;
     const code = result.codeResult.code;
-    if (!code || isLoading || pendingProduct) return;
+    if (!code || isLoading || pendingProduct || ignoredCodesRef.current.has(code)) return;
 
-    if (lastDetectedCodeRef.current !== code) {
-      lastDetectedCodeRef.current = code;
-      scanAttemptsRef.current = 1;
-    } else {
-      scanAttemptsRef.current += 1;
-    }
+    codeAttemptsRef.current[code] = (codeAttemptsRef.current[code] || 0) + 1;
 
     setIsLoading(true);
 
@@ -45,7 +43,10 @@ export default function ScannerStockApp() {
 
     if (productName) {
       setPendingProduct({ code, nom: productName, found: true });
-    } else if (scanAttemptsRef.current >= 5) {
+    } else if (codeAttemptsRef.current[code] >= 15) {
+      ignoredCodesRef.current.add(code);
+      console.warn(`Code ${code} ignoré après 15 échecs`);
+    } else if (codeAttemptsRef.current[code] >= 5) {
       setPendingProduct({ code, nom: "", found: false });
     }
 
@@ -67,6 +68,9 @@ export default function ScannerStockApp() {
   };
 
   const resetScannerState = () => {
+    if (pendingProduct?.code) {
+      ignoredCodesRef.current.add(pendingProduct.code);
+    }
     setPendingProduct(null);
     lastDetectedCodeRef.current = null;
     scanAttemptsRef.current = 0;
@@ -82,6 +86,7 @@ export default function ScannerStockApp() {
 
       Quagga.init(
         {
+          
           inputStream: {
             type: "LiveStream",
             target: scannerRef.current,
@@ -118,16 +123,21 @@ export default function ScannerStockApp() {
     };
   }, [scanning]);
 
-  // 🔴 GÈRE L'ÉCOUTE SELON `pendingProduct`
-  useEffect(() => {
-    if (!quaggaStartedRef.current) return;
+useEffect(() => {
+  if (!quaggaStartedRef.current) return;
 
-    if (pendingProduct) {
-      Quagga.offDetected(onDetected);
-    } else {
-      Quagga.onDetected(onDetected);
+  if (pendingProduct) {
+    Quagga.offDetected(onDetected);
+    if (pendingProduct.found) {
+      Quagga.stop();                // ← Stop complet si le produit est trouvé
+      quaggaStartedRef.current = false;
+      setScanning(false);          // ← On arrête aussi l’état de scan
     }
-  }, [pendingProduct, onDetected]);
+  } else {
+    Quagga.onDetected(onDetected);
+  }
+}, [pendingProduct, onDetected]);
+
 
   const isDetectionActive = scanning && !pendingProduct && !isLoading;
 
@@ -161,7 +171,6 @@ export default function ScannerStockApp() {
           </div>
         )}
 
-
         {pendingProduct && (
           <div className={`product-confirmation ${pendingProduct.found ? "success" : "error"}`}>
             <h3>{pendingProduct.found ? "✅ Produit détecté !" : "❌ Produit non trouvé"}</h3>
@@ -180,8 +189,6 @@ export default function ScannerStockApp() {
             </div>
           </div>
         )}
-
-
       </div>
     </div>
   );
