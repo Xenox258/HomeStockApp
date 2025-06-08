@@ -11,7 +11,8 @@
     "natural": "^8.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.1",
+    "react-router": "^6.30.1",
+    "react-router-dom": "^6.30.1",
     "react-scripts": "5.0.1",
     "snowball-stemmer.jsx": "^0.2.3",
     "web-vitals": "^2.1.4"
@@ -20,7 +21,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
+    "test:api": "REAL_API_TESTS=true react-scripts test --testPathPattern=apiIntegration",
+    "test:performance": "react-scripts test --testPathPattern=performance --watchAll=false",
+    "fetch-test-data": "node scripts/fetchTestData.js"
   },
   "eslintConfig": {
     "extends": [
@@ -39,5 +44,16 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^react-router-dom$": "<rootDir>/node_modules/react-router-dom"
+    }
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-react": "^7.27.1",
+    "babel-jest": "^30.0.0-beta.3",
+    "node-fetch": "^2.7.0"
   }
 }
