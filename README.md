@@ -1,70 +1,89 @@
-# Getting Started with Create React App
+# HomeStockApp
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**HomeStockApp** est une application de gestion d'inventaire domestique. Elle permet de suivre, organiser et gérer facilement les stocks d'objets, de denrées ou de produits présents à la maison. L'objectif est de ne jamais être à court d'un produit essentiel et d'avoir une vue d'ensemble sur ce que contient votre foyer.
 
-## Available Scripts
+## ✨ Fonctionnalités principales
 
-In the project directory, you can run:
+- **Ajout, modification et suppression d'articles**  
+  Gérez facilement votre inventaire en ajoutant, éditant ou supprimant des items.
 
-### `npm start`
+- **Catégorisation des produits**  
+  Organisez les articles par catégories (alimentation, entretien, hygiène, etc).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Suivi des quantités**  
+  Indiquez la quantité de chaque article et recevez une alerte lorsqu’un produit est presque épuisé.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Recherche et filtres**  
+  Trouvez rapidement un produit dans votre inventaire grâce à la recherche intelligente et aux filtres.
 
-### `npm test`
+- **Interface utilisateur intuitive**  
+  Utilisation facile sur ordinateur et mobile grâce à une interface moderne et responsive.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Historique des mouvements**  
+  Gardez une trace des entrées et sorties d’articles pour mieux gérer votre stock.
 
-### `npm run build`
+## 🚀 Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Cloner le dépôt**
+   ```bash
+   git clone https://github.com/Xenox258/HomeStockApp.git
+   cd HomeStockApp
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. **Installer les dépendances**
+   ```bash
+   npm install
+   ```
+   ou
+   ```bash
+   yarn install
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. **Lancer l'application**
+   ```bash
+   npm start
+   ```
+   ou
+   ```bash
+   yarn start
+   ```
 
-### `npm run eject`
+4. Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 📁 Structure du projet
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+src/
+ ├── components/      # Composants réutilisables de l’UI
+ ├── pages/           # Pages principales de l’application
+ ├── services/        # Gestion des données et API
+ ├── utils/           # Fonctions utilitaires
+ └── App.js           # Point d’entrée principal
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🛠️ Technologies utilisées
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- ReactJS
+- JavaScript (ES6+)
+- CSS Modules / Styled-components
+- [Ajouter les autres technologies selon le projet réel]
 
-## Learn More
+## 💡 Idées d’amélioration
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- Synchronisation cloud et gestion multi-utilisateur
+- Application mobile dédiée (React Native)
+- Export/Import de l’inventaire
+- Scannage de codes-barres pour l’ajout rapide
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🤝 Contribuer
 
-### Code Splitting
+Les contributions sont les bienvenues !  
+N’hésitez pas à ouvrir une issue ou à proposer une pull request.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 📄 Licence
 
-### Analyzing the Bundle Size
+Ce projet est sous licence MIT.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**HomeStockApp** – Gardez toujours le contrôle sur votre stock à la maison !
