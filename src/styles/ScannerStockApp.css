@@ -13,6 +13,8 @@
   max-width: 600px;
   width: 100%;
   text-align: center;
+  position: relative; /* <- pour ancres absolues internes */
+  transition: max-width 220ms ease;
 }
 
 .scanner-title {
@@ -52,42 +54,48 @@
   100% { box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4); }
 }
 
-.scanner-viewport {
-  position: relative;
-  width: 100%;
-  height: 70vh;           /* plus grand */
-  max-height: 800px;
-  border-radius: 15px;
-  overflow: hidden;
-  margin-bottom: 2rem;
-}
-
 .scanner-area {
+  position: relative;      /* important: ancre les <video>/<canvas> absolus de Quagga */
   width: 100%;
   height: 100%;
+  background: #000;        /* optionnel: fond noir derrière la vidéo */
 }
 
+/* Force la vidéo et le canvas overlay de Quagga à remplir exactement la zone */
+.scanner-area video,
+.scanner-area canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  z-index: 1;                 /* <<< sous notre overlay */
+}
+
+/* Notre overlay (cadre vert/rouge) au-dessus de Quagga */
 .scanner-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   pointer-events: none;
+  z-index: 2;                 /* <<< au-dessus */
 }
 
+/* Cadre: éviter les artefacts de bord (DPR/subpixels) */
 .scanner-frame {
   width: 90%;
   height: 60%;
+  box-sizing: border-box;     /* <<< inclut la bordure dans la taille */
   border: 3px solid #00ff88;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
   animation: scan-line 2s ease-in-out infinite;
   transition: all 0.5s ease;
+  transform: translateZ(0);   /* <<< fixe le rendu des bords sur certains GPUs */
 }
 
 @keyframes scan-line {
@@ -504,4 +512,315 @@
 
 .dev-tool-note {
   color: #6b7280;
+}
+
+/* Rangée: viewport + bulle à droite */
+.scanner-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Le viewport occupe tout l’espace restant */
+.scanner-row .scanner-viewport {
+  flex: 1 1 0;
+}
+
+/* La bulle est une colonne fixe à droite (pas de chevauchement) */
+.scanner-row .floating-confirmation {
+  position: static;              /* pas d’absolu */
+  flex: 0 0 360px;
+  width: 360px;
+  max-width: 360px;
+  margin-top: 0;
+  opacity: 0;
+  transform: translateX(12px);
+  animation: fc-enter 240ms ease-out forwards;
+  will-change: transform, opacity;
+}
+
+/* Animation (si pas déjà en haut du fichier) */
+@keyframes fc-enter {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Variante pour la carte interne (légère) */
+@keyframes fc-card-in {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Carte de confirmation: surcouche l’ancienne anim top */
+.product-confirmation {
+  animation: fc-card-in 220ms ease-out; /* remplace slideInFromTop */
+}
+
+/* Accessibilité: pas d’anim si l’utilisateur préfère réduire les mouvements */
+@media (prefers-reduced-motion: reduce) {
+  .scanner-row .floating-confirmation,
+  .product-confirmation {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Responsive pour les boutons d'erreur */
+@media (max-width: 480px) {
+  .error-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .btn-manual,
+  .btn-continue {
+    width: 100%;
+  }
+}
+
+/* Responsive amélioré pour la version fluide */
+@media (max-width: 768px) {
+  .loading-message {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+  
+  .loading-spinner {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .attempts-counter {
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+  }
+  
+  .error-message {
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+  
+  .error-actions {
+    margin-top: 1rem;
+  }
+  
+  .btn-manual {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Outil de test (dev-only) */
+.dev-tool {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 2px dashed #9ca3af;
+  border-radius: 12px;
+  background: #f9fafb;
+}
+
+.dev-tool-header {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.dev-tool-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.dev-tool-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.dev-tool-btn, .dev-tool-toggle {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #111827;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.dev-tool-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dev-tool-chip {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.dev-tool-link {
+  margin-left: auto;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.dev-tool-note {
+  color: #6b7280;
+}
+
+/* Rangée: viewport + bulle à droite */
+.scanner-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Le viewport occupe tout l’espace restant */
+.scanner-row .scanner-viewport {
+  flex: 1 1 0;
+}
+
+/* La bulle est une colonne fixe à droite (pas de chevauchement) */
+.scanner-row .floating-confirmation {
+  position: static;              /* pas d’absolu */
+  flex: 0 0 360px;
+  width: 360px;
+  max-width: 360px;
+  margin-top: 0;
+  opacity: 0;
+  transform: translateX(12px);
+  animation: fc-enter 240ms ease-out forwards;
+  will-change: transform, opacity;
+}
+
+/* Transition douce de la carte qui s’élargit */
+.scanner-card.wide {
+  max-width: 1024px;
+}
+
+/* Mobile: repasser en pile */
+@media (max-width: 900px) {
+  .scanner-row {
+    flex-direction: column;
+  }
+  .scanner-row .floating-confirmation {
+    flex: none;
+    width: auto;
+    max-width: 100%;
+    margin-top: 1rem;
+  }
+}
+
+/* Zone de travail: scanner + panneau de confirmation */
+.scanner-workspace {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Légère translation du scanner quand la validation est ouverte */
+.scanner-workspace.has-pending .scanner-viewport {
+  transform: translateX(-2%);
+  transition: transform 0.3s ease;
+}
+
+/* Panneau latéral masqué par défaut, qui glisse depuis la droite */
+.confirmation-panel {
+  width: 0;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: width 0.3s ease, opacity 0.25s ease, transform 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+}
+
+.confirmation-panel.visible {
+  width: 380px;               /* largeur du panneau à droite */
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Faire occuper tout le panneau par la carte de confirmation */
+.confirmation-panel .product-confirmation {
+  height: 100%;
+  margin-top: 0;              /* déjà géré par le panneau */
+}
+
+/* Viewport caméra (contient .scanner-area) */
+.scanner-viewport {
+  position: relative;
+  height: 60vh;        /* hauteur visible */
+  max-height: 520px;
+  min-height: 300px;
+  border-radius: 16px;
+  overflow: hidden;    /* masque les débordements vidéo/canvas */
+  background: #000;    /* fond si vidéo en attente */
+  margin-bottom: 1rem;
+}
+
+/* Quagga: vidéo/canvas sous notre overlay et sous la bulle */
+.scanner-area video,
+.scanner-area canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  z-index: 1;          /* vidéo/canvas */
+}
+
+.scanner-overlay {     /* cadre vert/rouge + texte */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Bulle de validation au-dessus de tout dans la carte */
+.floating-confirmation { z-index: 100; }
+
+/* Entrée douce de la colonne de validation */
+@keyframes fc-enter {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Variante pour la carte interne (légère) */
+@keyframes fc-card-in {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Carte de confirmation: surcouche l’ancienne anim top */
+.product-confirmation {
+  animation: fc-card-in 220ms ease-out; /* remplace slideInFromTop */
+}
+
+/* Accessibilité: pas d’anim si l’utilisateur préfère réduire les mouvements */
+@media (prefers-reduced-motion: reduce) {
+  .scanner-row .floating-confirmation,
+  .product-confirmation {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
 }

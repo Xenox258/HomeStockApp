@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react';
-import { normalizeProductName, haveCommonStems, matchesShoppingItem } from './utils/normalizeProductName';
+import { normalizeProductName, haveCommonStems, matchesShoppingItem } from 'utils/normalizeProductName';
 
 export const StockContext = createContext();
 

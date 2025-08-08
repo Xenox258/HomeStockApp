@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
-import { StockContext } from './StockContext';
-import { matchesShoppingItem, normalizeProductName, haveCommonStems } from './utils/normalizeProductName';
-import './CSS/IdealStockPage.css';
+import { StockContext } from 'context/StockContext';
+import { matchesShoppingItem, normalizeProductName, haveCommonStems } from 'utils/normalizeProductName';
+import 'styles/IdealStockPage.css';
 
 export default function IdealStockPage() {
   const { stock, idealStock, setIdealStockForProduct, removeFromIdealStock } = useContext(StockContext);

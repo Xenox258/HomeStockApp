@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect, useContext, useCallback } from "react";
-import Quagga from "@ericblade/quagga2";
-import { StockContext } from './StockContext';
-import './CSS/ScannerStockApp.css';
-import { normalizeOFFProduct, normalizeFreeTextName } from './utils/normalizeProductName';
-import ScannerDevTool from './components/ScannerDevTool';
+import React, { useState, useRef, useEffect, useContext, useCallback } from 'react';
+import Quagga from '@ericblade/quagga2';
+import { StockContext } from 'context/StockContext';
+import { normalizeOFFProduct, normalizeFreeTextName } from 'utils/normalizeProductName';
+import 'styles/ScannerStockApp.css';
+import ScannerDevTool from './ScannerDevTool';
 
 export default function ScannerStockApp() {
   const ignoredCodesRef = useRef(new Set());
@@ -222,7 +222,7 @@ export default function ScannerStockApp() {
 
   return (
     <div className="scanner-container">
-      <div className="scanner-card">
+      <div className={`scanner-card ${pendingProduct ? 'wide' : ''}`}>
         <h1 className="scanner-title">📱 Scanner et gestion du stock</h1>
 
         <button
@@ -232,42 +232,49 @@ export default function ScannerStockApp() {
           {scanning ? "⏹️ Stopper le scan" : "📷 Démarrer le scan"}
         </button>
 
-        {scanning && (
-          <div className="scanner-viewport">
-            <div ref={scannerRef} className="scanner-area" />
-            <div className="scanner-overlay">
-              <div className={`scanner-frame ${!isDetectionActive ? 'inactive' : ''}`}></div>
-              <p className="scanner-instructions">
-                {isLoading
-                  ? "🔍 Recherche du produit..."
-                  : pendingProduct
-                    ? pendingProduct.found
-                      ? "✅ Produit trouvé !"
-                      : "📝 Produit non trouvé après 5 essais"
-                    : "Positionnez le code-barres dans le cadre"}
-              </p>
+        <div className="scanner-row">
+          {scanning && (
+            <div className="scanner-viewport">
+              <div ref={scannerRef} className="scanner-area" />
+              <div className="scanner-overlay">
+                <div className={`scanner-frame ${!isDetectionActive ? 'inactive' : ''}`}></div>
+                <p className="scanner-instructions">
+                  {isLoading
+                    ? "🔍 Recherche du produit..."
+                    : pendingProduct
+                      ? pendingProduct.found
+                        ? "✅ Produit trouvé !"
+                        : "📝 Produit non trouvé après 5 essais"
+                      : "Positionnez le code-barres dans le cadre"}
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {pendingProduct && (
-          <div className={`product-confirmation ${pendingProduct.found ? "success" : "error"}`}>
-            <h3>{pendingProduct.found ? "✅ Produit détecté !" : "❌ Produit non trouvé"}</h3>
-            <p><strong>Code:</strong> {pendingProduct.code}</p>
-            <p>{pendingProduct.found ? "Confirmer l'ajout du produit :" : "Entrez manuellement le nom du produit :"}</p>
-            <input
-              type="text"
-              value={pendingProduct.nom}
-              onChange={onNomChange}
-              className="product-input"
-              placeholder="Nom du produit"
-            />
-            <div className="confirmation-buttons">
-              <button onClick={confirmAdd} className="btn-confirm">✓ Confirmer</button>
-              <button onClick={cancelAdd} className="btn-cancel">✗ Annuler</button>
+          {pendingProduct && (
+            <div className="floating-confirmation">
+              <div className={`product-confirmation ${pendingProduct.found ? "success" : "error"}`}>
+                <h3>{pendingProduct.found ? "✅ Produit détecté !" : "❌ Produit non trouvé"}</h3>
+                <p><strong>Code:</strong> {pendingProduct.code}</p>
+                <p>{pendingProduct.found ? "Confirmer l'ajout du produit :" : "Entrez manuellement le nom du produit :"}</p>
+
+                <input
+                  type="text"
+                  value={pendingProduct.nom}
+                  onChange={onNomChange}
+                  className="product-input"
+                  placeholder="Nom du produit"
+                />
+                <div className="confirmation-buttons">
+                  <button onClick={confirmAdd} className="btn-confirm" disabled={!pendingProduct.nom.trim()}>
+                    ✓ Confirmer
+                  </button>
+                  <button onClick={cancelAdd} className="btn-cancel">✗ Annuler</button>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {DEV && (
           <ScannerDevTool

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
+import 'styles/HomePage.css';
+import { StockContext } from 'context/StockContext';
 import { Link } from 'react-router-dom';
-import { StockContext } from './StockContext';
-import './CSS/HomePage.css';
 
 export default function HomePage() {
   const { stock, idealStock } = useContext(StockContext);

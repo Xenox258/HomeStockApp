@@ -7,7 +7,8 @@ const SAMPLE_EANS = [
   { label: 'Evian 1.5L', code: '3068320053506' }
 ];
 
-export default function ScannerDevTool({ onSimulate, onSimulateFive, onForceManual, scanning, onToggleScanning }) {
+export default function ScannerDevTool(props) {
+  const { onSimulate, onSimulateFive, onForceManual, scanning, onToggleScanning } = props;
   const [code, setCode] = useState('');
 
   const selectSample = (c) => setCode(c);

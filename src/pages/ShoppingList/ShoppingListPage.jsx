@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { StockContext } from './StockContext';
-import { matchesShoppingItem, normalizeProductName, haveCommonStems } from './utils/normalizeProductName';
-import './CSS/ShoppingListPage.css';
+import { StockContext } from 'context/StockContext';
+import { matchesShoppingItem, normalizeProductName, haveCommonStems } from 'utils/normalizeProductName';
+import 'styles/ShoppingListPage.css';
 
 export default function ShoppingListPage() {
   const { stock, idealStock } = useContext(StockContext);

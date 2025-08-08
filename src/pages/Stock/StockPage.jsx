@@ -1,7 +1,7 @@
 /* filepath: /home/teob/Documents/Perso/APP_Gest_Courses/gest_stock/src/StockPage.js */
 import React, { useContext, useState } from 'react';
-import { StockContext } from './StockContext';
-import './CSS/StockPage.css';
+import { StockContext } from 'context/StockContext';
+import 'styles/StockPage.css';
 
 export default function StockPage() {
   const { stock, updateStock, removeFromStock } = useContext(StockContext);

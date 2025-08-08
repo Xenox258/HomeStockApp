@@ -511,4 +511,4 @@ describe('matchesShoppingItem', () => {
     });
   });
   });
-});})
+})

@@ -88,7 +88,7 @@ const categoryExclusions = {
 
 
 // Ingrédients exclus (ne doivent pas matcher si seuls)
-const excludedIngredients = ['fraise', 'peche', 'abricot', 'chocolat', 'vanille'];
+// const excludedIngredients = ['fraise', 'peche', 'abricot', 'chocolat', 'vanille'];
 
 // --- Utilitaires ---
 
@@ -137,12 +137,6 @@ function isBrandVariant(wordA, wordB) {
   if (normA.replace(/[^a-z]/g, '') === normB.replace(/[^a-z]/g, '')) return true;
 
   return false;
-}
-
-function isCategoryExcluded(category, scannedWords) {
-  const excl = categoryExclusions[category];
-  if (!excl) return false;
-  return scannedWords.some(word => excl.includes(word));
 }
 
 // Pour la catégorie "lait" : exclure si c'est un ingrédient secondaire
