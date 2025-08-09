@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect, useRef } from 'react';
 import { normalizeProductName, haveCommonStems, matchesShoppingItem } from 'utils/normalizeProductName';
 
 export const StockContext = createContext();
@@ -6,7 +6,32 @@ export const StockContext = createContext();
 export const StockProvider = ({ children }) => {
   const [stock, setStock] = useState([]);
   const [idealStock, setIdealStock] = useState([]);
-  const [manualShoppingList, setManualShoppingList] = useState([]); // NEW
+  const [manualShoppingList, setManualShoppingList] = useState([]);
+
+  const hydratedRef = useRef(false);
+  const LS_KEY = 'homestock:v1';
+
+  // Hydration
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.stock) setStock(parsed.stock);
+        if (parsed.idealStock) setIdealStock(parsed.idealStock);
+        if (parsed.manualShoppingList) setManualShoppingList(parsed.manualShoppingList);
+      }
+    } catch(e){ console.warn('Hydration error', e); }
+    hydratedRef.current = true;
+  }, []);
+
+  // Sauvegarde (throttle simple)
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    const payload = JSON.stringify({ stock, idealStock, manualShoppingList });
+    localStorage.setItem(LS_KEY, payload);
+  }, [stock, idealStock, manualShoppingList]);
 
   const addManualShoppingItem = (nom, quantite = 1, meta = {}) => {
     const name = nom.trim();
@@ -43,7 +68,6 @@ export const StockProvider = ({ children }) => {
     setManualShoppingList(prev => prev.filter(i => !i.purchased));
   };
 
-  // Assure que normalizeProductName, haveCommonStems, matchesShoppingItem sont importés
   const adjustManualListAfterStockChange = (productName, delta = 1) => {
     if (delta <= 0) return;
     const addedStems = normalizeProductName(productName);
@@ -80,16 +104,14 @@ export const StockProvider = ({ children }) => {
 
   const addToStock = (product) => {
     const scannedStems = normalizeProductName(product.nom);
-
     setStock(prevStock => {
       const found = prevStock.find(p =>
         haveCommonStems(normalizeProductName(p.nom), scannedStems)
       );
-
       let addedQty = 1;
-
+      let updated;
       if (found) {
-        const updated = prevStock.map(p =>
+        updated = prevStock.map(p =>
           haveCommonStems(normalizeProductName(p.nom), scannedStems)
             ? {
                 ...p,
@@ -99,40 +121,17 @@ export const StockProvider = ({ children }) => {
               }
             : p
         );
-        // décrémenter la liste manuelle
         adjustManualListAfterStockChange(found.nom, addedQty);
-        return updated;
       } else {
-        const newList = [...prevStock, {
+        updated = [...prevStock, {
           ...product,
-          quantite: 1,
-          imageUrl: product.imageUrl || null,
-          nutriScore: product.nutriScore || null
+            quantite: 1,
+            imageUrl: product.imageUrl || null,
+            nutriScore: product.nutriScore || null
         }];
         adjustManualListAfterStockChange(product.nom, addedQty);
-        return newList;
       }
-    });
-
-    // 🎯 NOUVEAU: Vérification automatique avec la liste de courses
-    setIdealStock((prevIdealStock) => {
-      return prevIdealStock.map((idealProduct) => {
-        // Utiliser la nouvelle fonction de matching pour la liste de courses
-        if (matchesShoppingItem(product.nom, idealProduct.nom)) {
-          const currentInStock = stock.find((s) => 
-            haveCommonStems(normalizeProductName(s.nom), normalizeProductName(idealProduct.nom))
-          );
-          const currentQty = currentInStock ? currentInStock.quantite : 0;
-          
-          // Vérifier si on a maintenant assez en stock
-          if (currentQty + 1 >= idealProduct.quantite) {
-            console.log(`📦 Objectif atteint pour "${idealProduct.nom}" grâce à "${product.nom}"`);
-          } else {
-            console.log(`📈 Progression pour "${idealProduct.nom}": ${currentQty + 1}/${idealProduct.quantite}`);
-          }
-        }
-        return idealProduct;
-      });
+      return updated;
     });
   };
 
@@ -156,17 +155,15 @@ export const StockProvider = ({ children }) => {
   };
 
   const updateStock = (code, newQuantity, newName) => {
-    setStock((prevStock) => {
-      if (newQuantity <= 0) {
-        return prevStock.filter((p) => p.code !== code);
-      } else {
-        return prevStock.map((p) =>
-          p.code === code 
-            ? { ...p, quantite: newQuantity, nom: newName || p.nom } 
-            : p
-        );
+    setStock(prev => prev.map(p => {
+      if (p.code !== code) return p;
+      const oldQty = p.quantite;
+      const nextQty = newQuantity <= 0 ? 0 : newQuantity;
+      if (nextQty > oldQty) {
+        adjustManualListAfterStockChange(newName || p.nom, nextQty - oldQty);
       }
-    });
+      return { ...p, quantite: nextQty, nom: newName || p.nom };
+    }).filter(p => p.quantite > 0));
   };
 
   const removeFromStock = (code) => {
@@ -184,7 +181,7 @@ export const StockProvider = ({ children }) => {
       value={{
         stock,
         idealStock,
-        manualShoppingList,          // NEW
+        manualShoppingList,
         addManualShoppingItem,
         updateManualShoppingItem,
         removeManualShoppingItem,

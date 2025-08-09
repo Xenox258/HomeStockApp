@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { StockContext } from 'context/StockContext';
 import { matchesShoppingItem, normalizeProductName, haveCommonStems } from 'utils/normalizeProductName';
@@ -14,45 +14,36 @@ export default function ShoppingListPage() {
   const [showAdd, setShowAdd] = useState(true); // <--- nouveau (par défaut ouvert)
 
   // Auto deficits (ancien calcul)
-  const autoList = idealStock.map((idealProduct) => {
-    const current = stock.find(p =>
-      matchesShoppingItem(p.nom, idealProduct.nom) ||
-      haveCommonStems(normalizeProductName(p.nom), normalizeProductName(idealProduct.nom))
-    );
-    const currentQuantite = current ? current.quantite : 0;
-    const neededQuantite = Math.max(0, idealProduct.quantite - currentQuantite);
-    let priority = 'low';
-    const percMissing = neededQuantite / idealProduct.quantite;
-    if (percMissing >= 0.7) priority = 'high';
-    else if (percMissing >= 0.4) priority = 'medium';
+  const { autoList, manualListPrepared, shoppingList, totalItems, totalNeeded, highPriorityItems } = useMemo(() => {
+    const auto = idealStock.map(ideal => {
+      const current = stock.find(p =>
+        matchesShoppingItem(p.nom, ideal.nom) ||
+        haveCommonStems(normalizeProductName(p.nom), normalizeProductName(ideal.nom))
+      );
+      const currentQ = current ? current.quantite : 0;
+      const needed = Math.max(0, ideal.quantite - currentQ);
+      let priority = 'low';
+      const perc = needed / ideal.quantite;
+      if (perc >= 0.7) priority = 'high';
+      else if (perc >= 0.4) priority = 'medium';
+      return { key:'auto-'+ideal.nom, nom:ideal.nom, quantite:ideal.quantite, currentQuantite:currentQ, neededQuantite:needed, priority, manual:false };
+    }).filter(x=>x.neededQuantite>0);
+
+    const manualPrep = manualShoppingList.map(i => ({
+      key:'man-'+i.id, id:i.id, nom:i.nom, neededQuantite:i.quantite,
+      priority:'manual', manual:true, purchased:i.purchased||false
+    }));
+
+    const merged = [...manualPrep, ...auto];
     return {
-      key: 'auto-' + idealProduct.nom,
-      nom: idealProduct.nom,
-      quantite: idealProduct.quantite,
-      currentQuantite,
-      neededQuantite,
-      priority,
-      manual: false
+      autoList:auto,
+      manualListPrepared:manualPrep,
+      shoppingList:merged,
+      totalItems: merged.length,
+      totalNeeded: merged.reduce((s,i)=>s+i.neededQuantite,0),
+      highPriorityItems: merged.filter(i=>i.priority==='high').length
     };
-  }).filter(x => x.neededQuantite > 0);
-
-  // Manual list items (direct quantite)
-  const manualListPrepared = manualShoppingList.map(i => ({
-    key: 'man-' + i.id,
-    id: i.id,
-    nom: i.nom,
-    neededQuantite: i.quantite,
-    priority: 'manual',
-    manual: true,
-    purchased: i.purchased || false
-  }));
-
-  // Merge (simple concat; pas de déduplication inter-lists pour garder l’intention)
-  const shoppingList = [...manualListPrepared, ...autoList];
-
-  const totalItems = shoppingList.length;
-  const totalNeeded = shoppingList.reduce((s, i) => s + i.neededQuantite, 0);
-  const highPriorityItems = shoppingList.filter(i => i.priority === 'high').length; // <- AJOUT
+  }, [idealStock, stock, manualShoppingList]);
 
   const addManual = (e) => {
     e.preventDefault();

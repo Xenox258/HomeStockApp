@@ -1,40 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import 'styles/App.css';
 
 export default function Navbar() {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <Link to="/" className="nav-title-link">
-          <div className="nav-title">HomeStockApp</div>
+        <Link to="/" className="nav-title-link" onClick={close}>
+          <div className="nav-title gradient-logo">HomeStockApp</div>
         </Link>
-        <ul className="nav-menu">
-          <li>
-            <NavLink to="/" end className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>
-              Accueil
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/scanner" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>
-              Scanner
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/stock" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>
-              Stock
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/ideal-stock" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>
-              Objectifs
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/shopping-list" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>
-              Courses
-            </NavLink>
-          </li>
+        <button
+          className={'nav-toggle' + (open ? ' open' : '')}
+            onClick={() => setOpen(o => !o)}
+            aria-label="Menu"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+        <ul className={'nav-menu' + (open ? ' show' : '')}>
+          <li><NavLink onClick={close} to="/" end className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Accueil</NavLink></li>
+          <li><NavLink onClick={close} to="/scanner" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Scanner</NavLink></li>
+          <li><NavLink onClick={close} to="/stock" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Stock</NavLink></li>
+          <li><NavLink onClick={close} to="/ideal-stock" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Objectifs</NavLink></li>
+          <li><NavLink onClick={close} to="/shopping-list" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Courses</NavLink></li>
         </ul>
       </div>
     </nav>
