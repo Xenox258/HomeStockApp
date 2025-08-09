@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import { StockContext } from 'context/StockContext';
 import { matchesShoppingItem, normalizeProductName, haveCommonStems } from 'utils/normalizeProductName';
 import 'styles/IdealStockPage.css';
+import ProductSuggestInput from 'components/common/ProductSuggestInput';
 
 export default function IdealStockPage() {
   const { stock, idealStock, setIdealStockForProduct, removeFromIdealStock } = useContext(StockContext);
@@ -74,14 +75,11 @@ export default function IdealStockPage() {
         <form onSubmit={handleSubmit} className="add-product-form">
           <div className="form-group">
             <label htmlFor="product-name">Nom du produit</label>
-            <input
-              id="product-name"
-              type="text"
+            <ProductSuggestInput
               value={nom}
-              onChange={(e) => setNom(e.target.value)}
-              placeholder="Ex: Lait, Pain, Pommes..."
-              className="product-name-input"
-              required
+              onChange={setNom}
+              onSelect={(val)=> setNom(val)}
+              placeholder="Ex: Lait, Nutella, Pâte brisée..."
             />
           </div>
           <div className="form-group">

@@ -79,12 +79,12 @@ const brandVariantsGroups = [
   ['sthubert', 'sainthubert', 'st-hubert', 'saint-hubert', 'hubert'],
 ];
 
-// Exclusions par catégorie
-const categoryExclusions = {
-  'lait': ['coco', 'amande', 'soja', 'riz', 'avoine'],
-  'pain': ['sucre', 'perdu'],
-  'pates': ['brisée', 'feuilletée'],
-};
+// Exclusions par catégorie (actuellement inutilisé -> commenté pour enlever le warning ESLint)
+// const categoryExclusions = {
+//   'lait': ['coco', 'amande', 'soja', 'riz', 'avoine'],
+//   'pain': ['sucre', 'perdu'],
+//   'pates': ['brisée', 'feuilletée'],
+// };
 
 
 // Ingrédients exclus (ne doivent pas matcher si seuls)
@@ -420,13 +420,24 @@ export function normalizeOFFProduct(off) {
   const canonicalName = buildCanonicalName({ category, brand, rawName });
   const variant = brand ? detectVariantForBrand(brand, rawName) : null;
 
+  // --- Nouveautés ---
+  const nutri = (off?.nutrition_grade_fr || '').toLowerCase() || null;   // 'a'...'e'
+  const imageUrl =
+    off?.image_front_small_url ||
+    off?.image_front_url ||
+    off?.image_url ||
+    null;
+  const thumbUrl = off?.image_thumb_url || imageUrl;
+
   return {
     rawName: rawName?.trim() || null,
-    canonicalName,    // à utiliser comme “nom” dans ton stock
+    canonicalName,
     brand: brand || null,
-    category,         // ex: 'cow-milk', 'oat-milk', 'soda', 'energy-drink'
-    variant,          // ex: 'Zero', 'Ultra'
-    // Tags utiles pour debug ou matching avancé
+    category,
+    variant,
+    nutriScore: nutri,          // ex: 'a'
+    imageUrl,                   // grande ou medium
+    thumbUrl,                   // miniature fallback
     tags: offTags(off, ['categories_tags', 'labels_tags', 'ingredients_tags', 'allergens_tags'])
   };
 }

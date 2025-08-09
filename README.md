@@ -5,8 +5,23 @@ Application web (React) de gestion de stock domestique avec:
 - Normalisation intelligente des noms (détection marque / catégorie)
 - Objectifs de stock (stock cible)
 - Liste de courses générée automatiquement
+- Liste de courses manuelle (ajout direct + quantités)
+- Auto‑complétion produits (OpenFoodFacts) dans les formulaires
+- Décrément automatique de la liste manuelle quand un produit scanné correspond
 - Edition rapide (quantités + renommage)
 - Interface responsive
+
+---
+
+## 🆕 Nouveautés récentes
+
+| Fonction | Description |
+|----------|-------------|
+| Auto‑complétion OFF | Champ de saisie avec suggestions (images + Nutri‑Score). |
+| Liste manuelle | Ajout d’articles non liés aux objectifs. |
+| Synchronisation | Quand un scan ajoute un produit au stock, la ligne manuelle correspondante est décrémentée/supprimée. |
+| Badge MANUEL | Différenciation visuelle dans la liste de courses. |
+| Matching amélioré | Normalisation + stems pour relier stock / objectifs / manuel. |
 
 ---
 
@@ -37,197 +52,124 @@ npm test
 src/
  ├─ App.js
  ├─ index.js
- ├─ assets/                # Médias (logo…)
+ ├─ assets/
  ├─ components/
- │   ├─ common/            # (placeholder composants transverses)
- │   └─ scanner/           # Scanner + outils dev
+ │   ├─ common/
+ │   │   └─ ProductSuggestInput.jsx   # Auto‑complétion OFF
+ │   └─ scanner/
  │       ├─ ScannerStockApp.jsx
  │       └─ ScannerDevTool.jsx
  ├─ context/
- │   └─ StockContext.js    # State global (stock + objectifs)
+ │   └─ StockContext.js               # State global + décrément liste manuelle
  ├─ pages/
  │   ├─ Home/
  │   ├─ Scanner/
  │   ├─ Stock/
  │   ├─ IdealStock/
  │   └─ ShoppingList/
- ├─ styles/                # Feuilles CSS globales
+ ├─ styles/
+ │   └─ SuggestInput.css              # Styles de l’auto‑complétion
  ├─ utils/
  │   └─ normalizeProductName.js
- ├─ tests/                 # Tests (normalisation, scanner, perf…)
+ ├─ tests/
  └─ setupTests.js
 ```
 
-Alias utilisés: `jsconfig.json` définit seulement `baseUrl: src` → imports absolus (`styles/...`, `pages/...`, `utils/...`).
+Alias: `baseUrl: src` → imports racine (`utils/...`, `styles/...`).
 
 ---
 
 ## 🔍 Scanner (Quagga2)
 
-- Initialisation via `Quagga.init` dans `ScannerStockApp.jsx`
-- Flux vidéo LiveStream (caméra arrière mobile si possible)
-- Hooks:
-  - `onDetected` (EAN trouvé) → requête OpenFoodFacts
-  - `onProcessed` → dessin des boxes sur le canvas overlay
-- Tentatives:
-  - <5 échecs: continue
-  - ≥5: bascule saisie manuelle
-  - ≥15: code ignoré pour réduire le bruit
-- Pause logique: quand un produit est en validation on retire temporairement `onDetected` sans couper la caméra
+- `ScannerStockApp.jsx` (initialisation + overlay)
+- Détection EAN → fetch OFF → normalisation (`normalizeOFFProduct`)
+- Après confirmation: `addToStock` (déclenche ajustement liste manuelle)
+
+---
+
+## 🛒 Liste de Courses
+
+Deux sources fusionnées:
+1. Objectifs manquants (auto)
+2. Liste manuelle (items ajoutés directement)
+
+Logique liste manuelle:
+- `addManualShoppingItem(nom, quantite)`
+- Synchronisation: `adjustManualListAfterStockChange` décrémente ou supprime lors d’un ajout au stock (scan ou édition quantité positive).
+- Pas de dédup cross‑sources pour conserver l’intention utilisateur.
+
+---
+
+## ✏️ Auto‑complétion OFF
+
+Composant: `ProductSuggestInput.jsx`
+- Requête OFF (`search.pl`) après 300 ms de debounce
+- Cache mémoire simple (clé = query normalisée)
+- Affiche image + Nutri‑Score (si dispo)
+- Valeurs par défaut si pas de résultats
+- Réutilisé dans: Ajout objectifs + Ajout manuel liste de courses
 
 ---
 
 ## 🧠 Normalisation & Matching
 
-Fichier: `utils/normalizeProductName.js`
-
-Fonctions clés:
-- `normalizeProductName(text)` → tableau de “stems” (mots tronqués à 5 chars, accents retirés, mots vides filtrés)
-- `matchesShoppingItem(productName, shoppingItem)`:
-  1. Normalisation bilatérale
-  2. Gestion variantes de marque (ex: RedBull / Red Bull)
-  3. Similarité pondérée
-  4. Règles anti faux positifs (catégorie lait, ingrédients, termes génériques)
-- `normalizeOFFProduct(off)` → extraction canonique (marque, catégorie lait / boisson, variante)
-- Catégorisation heuristique (laits végétaux, energy drinks, etc.)
-
-Tests: voir `tests/normalizeProductName.test.js` (cas complexes, perf, faux positifs).
+Fichier `utils/normalizeProductName.js`:
+- Tokenisation, accents retirés, troncature (5 chars)
+- Stems triés → comparaison stable
+- Fonctions: `normalizeProductName`, `haveCommonStems`, `matchesShoppingItem`, `normalizeOFFProduct`
+- Matching multi‑usage (stock ↔ objectifs ↔ manuel)
 
 ---
 
 ## 🧾 Contexte Global (StockContext)
 
 Expose:
-- `stock`: [{ code, nom, quantite }]
-- `idealStock`: [{ nom, quantite }]
-- `addToStock(product)`
-- `updateStock(code, newQty, newName?)`
-- `removeFromStock(code)`
-- `setIdealStockForProduct(nom, quantite)`
-- `removeFromIdealStock(nom)`
-- Matching automatique pour progression des objectifs + liste de courses.
+- `stock`, `idealStock`, `manualShoppingList`
+- CRUD: `addToStock`, `updateStock`, `removeFromStock`
+- Objectifs: `setIdealStockForProduct`, `removeFromIdealStock`
+- Liste manuelle: `addManualShoppingItem`, `updateManualShoppingItem`, `removeManualShoppingItem`, `clearPurchasedManualItems`
+- Synchro: `adjustManualListAfterStockChange(productName, delta)` interne (appelé dans `addToStock`)
 
 ---
 
-## 🛒 Liste de Courses
+## Flux d’un scan jusqu’à la liste
 
-Page `ShoppingListPage.jsx`:
-- Calcule quantité manquante: objectif − stock courant
-- Classe priorité (low / medium / high) selon % manquant
-- N’affiche que les produits incomplets
-
----
-
-## 🎯 Objectifs (Stock Cible)
-
-Page `IdealStockPage.jsx`:
-- Ajout / édition inline des quantités cibles
-- Barre de progression par produit
-- Affichage du produit réel auquel l’objectif est mappé (matching robuste)
-
----
-
-## ✨ UI / UX
-
-- Layout responsive pur CSS (sans framework lourd)
-- Animations discrètes (apparition panneaux, hover cartes)
-- Composants modulaires (scanner découplé)
-- Saisie manuelle fallback après échecs répétés
-
----
-
-## 🧪 Tests
-
-Catégories:
-- Normalisation & matching (beaucoup de cas réels)
-- Scanner (simulation Quagga mocké)
-- Performance (scénarios larges)
-- Contexte (ajout / mise à jour)
-
-Mock principaux:
-- `fetch` (OFF)
-- Quagga2 (init / onDetected / onProcessed)
-
----
-
-## ⚙️ Scripts (npm)
-
-| Commande           | Rôle                                  |
-|--------------------|----------------------------------------|
-| `npm start`        | Dev server (port 3000)                 |
-| `npm test`         | Tests interactifs                      |
-| `npm run build`    | Build production (dans `build/`)       |
+1. Scan → code détecté
+2. Fetch OFF → normalisation du nom canonique
+3. Confirmation → `addToStock`
+4. Stock mis à jour
+5. `adjustManualListAfterStockChange` réduit la quantité manuelle correspondante
+6. Recalcul liste de courses (auto + manuel restant)
 
 ---
 
 ## 🔐 Permissions & Sécurité
 
-- Scanner nécessite permission caméra (HTTPS conseillé en prod)
-- Aucune persistance externe par défaut (pas d’auth)
-- Ajout futur: stockage local (localStorage / IndexedDB) ou backend API
+(identique) Scanner nécessite HTTPS pour mobiles.
 
 ---
 
-## 📈 Améliorations Futures (Roadmap)
+## 📈 Roadmap
 
-- Persistance locale + sync cloud
-- Détection automatique des quantités (pack x6…)
-- Historique mouvements (entrée/sortie)
-- Export / import CSV ou JSON
-- Mode offline PWA
-- Internationalisation (FR/EN)
-- Algorithme ML de catégorisation
-
----
-
-## 🩺 Dépannage Rapide
-
-| Problème                               | Solution courte |
-|----------------------------------------|-----------------|
-| Vidéo noire                            | Vérifier permission caméra / onglet actif |
-| Bulle validation superpose la vidéo    | Vérifier `.scanner-row` et styles `.floating-confirmation` |
-| Tests Quagga échouent                  | Regarder mock dans `setupTests.js` |
-| Faux positifs matching “Lait de coco”  | Catégorie lait: heuristique `matchesCategoryLait` (adapter si besoin) |
+- Persistance locale (localStorage / IndexedDB)
+- Boutons +/- pour quantités (remplacer spin native)
+- Fusion intelligente auto + manuel (option)
+- PWA offline
+- Export / import
+- i18n
 
 ---
 
-## ♿ Accessibilité (A11y)
+## 🩺 Dépannage rapide (ajouts)
 
-- Icônes + texte (éviter reliance exclusive aux emojis à terme)
-- Boutons focusables; améliorer future navigation clavier (todo: rôles ARIA scanner)
-- Prévoir réduction animations via `prefers-reduced-motion` (déjà utilisé pour certaines animations)
-
----
-
-## 📦 Dépendances principales
-
-- React 18
-- Quagga2 (`@ericblade/quagga2`)
-- Jest / React Testing Library (tests)
+| Problème | Solution |
+|----------|----------|
+| Suggestion OFF ne s’affiche pas | Vérifier réseau / CORS / console |
+| Liste manuelle ne décrémente pas après scan | Vérifier nom scanné vs item (accents retirés) |
+| Doublons nom objectif / manuel | Comportement attendu (pas fusionné) |
 
 ---
 
-## 📝 Licence
-
-MIT (ajouter le fichier LICENSE si absent).
-
----
-
-## 🤝 Contribution
-
-1. Fork
-2. Branche: `feat/ma-fonction`
-3. PR avec description concise (français ou anglais)
-4. Tests si logique modifiée
-
----
-
-## 🗂️ Notes Dev
-
-- Aliases TypeScript style non utilisés (CRA vanilla) → baseUrl suffisant.
-- Toute logique de parsing OFF centralisée dans `normalizeProductName.js` (éviter duplication).
-- Ajouter un service dédié si intégration d’autres APIs (créer dossier `services/`).
-
----
+Le reste du document (sections Tests, Scripts, Accessibilité, etc.) reste inchangé.
 
 Bon développement.

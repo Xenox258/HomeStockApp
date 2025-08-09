@@ -53,12 +53,48 @@ export default function StockPage() {
         </div>
       ) : (
         <div className="stock-grid">
-          {stock.map((product) => (
+          {stock.map((product) => {
+            const ns = (product.nutriScore || '').toLowerCase(); // 'a'...'e'
+            return (
             <div key={product.code} className="product-card">
               <div className="product-header">
                 <div className="product-info">
-                  <h3 className="product-name">{product.nom}</h3>
+                  <div className="product-main-line">
+                    {product.imageUrl
+                      ? (
+                        <img
+                          src={product.imageUrl}
+                          alt={product.nom}
+                          className="product-thumb inline"
+                          loading="lazy"
+                        />
+                      )
+                      : (
+                        <div className="product-thumb placeholder inline">
+                          {product.nom?.[0]?.toUpperCase() || '🗂️'}
+                        </div>
+                      )
+                    }
+                    <h3 className="product-name">
+                      {product.nom.charAt(0).toUpperCase() + product.nom.slice(1)}
+                    </h3>
+                  </div>
                   <span className="product-code">Code: {product.code}</span>
+
+                  {ns && (
+                    <div className="nutriscore-scale" aria-label={`Nutri-Score ${ns.toUpperCase()}`}>
+                      {['a','b','c','d','e'].map(letter => (
+                        <span
+                          key={letter}
+                          className={
+                            'ns-letter ns-' + letter + (letter === ns ? ' active' : '')
+                          }
+                        >
+                          {letter.toUpperCase()}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="quantity-badge">
                   {product.quantite}
@@ -119,7 +155,8 @@ export default function StockPage() {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

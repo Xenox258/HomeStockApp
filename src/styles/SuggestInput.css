@@ -1,0 +1,105 @@
+.suggest-wrapper {
+  position: relative;
+  flex: 1 1 auto;
+}
+
+.suggest-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: .25s;
+}
+.suggest-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102,126,234,.25);
+}
+
+.suggest-loading {
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .9rem;
+  opacity: .7;
+}
+
+.suggest-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 340px;
+  overflow-y: auto;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.35rem 0;
+  margin: 0;
+  list-style: none;
+  z-index: 30;
+  box-shadow: 0 12px 32px -4px rgba(0,0,0,.15);
+  animation: fadeSuggest .18s ease;
+}
+
+@keyframes fadeSuggest {
+  from { opacity:0; transform: translateY(4px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+.suggest-item {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .55rem .85rem;
+  cursor: pointer;
+  font-size: .9rem;
+  line-height: 1.2;
+  transition: background .15s, color .15s;
+}
+.suggest-item:hover,
+.suggest-item.active {
+  background: linear-gradient(135deg,#667eea15,#764ba215);
+}
+
+.suggest-thumb {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background:#fff;
+}
+
+.suggest-text {
+  flex: 1 1 auto;
+  font-weight: 500;
+  color:#374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggest-nutri {
+  font-size: .7rem;
+  font-weight: 700;
+  padding: .35rem .45rem;
+  border-radius: 6px;
+  color:#fff;
+  letter-spacing:.5px;
+  min-width: 28px;
+  text-align:center;
+}
+.suggest-nutri.ns-a { background:#0b8f3d; }
+.suggest-nutri.ns-b { background:#5cab18; }
+.suggest-nutri.ns-c { background:#f5c200; color:#222; }
+.suggest-nutri.ns-d { background:#f57c00; }
+.suggest-nutri.ns-e { background:#d93025; }
+
+@media (max-width:600px){
+  .suggest-text { font-size:.85rem; }
+  .suggest-item { padding:.5rem .75rem; }
+}

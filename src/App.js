@@ -9,12 +9,14 @@ import IdealStockPage from 'pages/IdealStock/IdealStockPage.jsx';
 import ShoppingListPage from 'pages/ShoppingList/ShoppingListPage.jsx';
 import ScannerPage from 'pages/Scanner/ScannerPage.jsx';
 import { StockProvider } from 'context/StockContext';
+import Navbar from 'components/common/Navbar';
 
 export default function App() {
   return (
     <StockProvider>
       <div className="app">
         <Router>
+          <Navbar />
           <div className="main-content">
             <Routes>
               <Route path="/" element={<HomePage />} />

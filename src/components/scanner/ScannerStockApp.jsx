@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useContext, useCallback } from 'react';
 import Quagga from '@ericblade/quagga2';
 import { StockContext } from 'context/StockContext';
-import { normalizeOFFProduct, normalizeFreeTextName } from 'utils/normalizeProductName';
+import { normalizeOFFProduct } from 'utils/normalizeProductName'; // <- retirer normalizeFreeTextName si plus utilisé
 import 'styles/ScannerStockApp.css';
 import ScannerDevTool from './ScannerDevTool';
 
@@ -25,15 +25,30 @@ export default function ScannerStockApp() {
 
   const DEV = process.env.NODE_ENV !== 'production';
 
-  // Helper: récupère le nom canonique OFF
-  async function fetchOFFCanonicalName(ean) {
-    const resp = await fetch(`https://world.openfoodfacts.org/api/v2/product/${ean}.json`);
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    const off = data?.product;
-    if (!off) return null;
-    const normalized = normalizeOFFProduct(off);
-    return normalized.canonicalName || null;
+  // Helper: récupère toutes les infos utiles OFF (nom, image, nutri)
+  async function fetchOFFProductData(ean) {
+    try {
+      const resp = await fetch(`https://world.openfoodfacts.org/api/v2/product/${ean}.json`);
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      const off = data?.product;
+      if (!off) return null;
+      const normalized = normalizeOFFProduct(off);
+      return {
+        canonicalName: normalized.canonicalName || null,
+        imageUrl: normalized.imageUrl || null,
+        nutriScore: normalized.nutriScore || null
+      };
+    } catch (e) {
+      console.warn('OFF fetch error', e);
+      return null;
+    }
+  }
+
+  // Capitalisation simple
+  function capitalizeFirst(str = '') {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   const onDetected = useCallback(async (result) => {
@@ -42,18 +57,23 @@ export default function ScannerStockApp() {
     if (!code || isLoading || pendingProduct || ignoredCodesRef.current.has(code)) return;
 
     codeAttemptsRef.current[code] = (codeAttemptsRef.current[code] || 0) + 1;
-
     setIsLoading(true);
 
-    const productName = await fetchOFFCanonicalName(code);
+    const offData = await fetchOFFProductData(code);
 
-    if (productName) {
-      setPendingProduct({ code, nom: productName, found: true });
+    if (offData?.canonicalName) {
+      setPendingProduct({
+        code,
+        nom: capitalizeFirst(offData.canonicalName),
+        found: true,
+        imageUrl: offData.imageUrl,
+        nutriScore: offData.nutriScore
+      });
     } else if (codeAttemptsRef.current[code] >= 15) {
       ignoredCodesRef.current.add(code);
       console.warn(`Code ${code} ignoré après 15 échecs`);
     } else if (codeAttemptsRef.current[code] >= 5) {
-      setPendingProduct({ code, nom: "", found: false });
+      setPendingProduct({ code, nom: "", found: false, imageUrl: null, nutriScore: null });
     }
 
     setIsLoading(false);
@@ -68,7 +88,9 @@ export default function ScannerStockApp() {
     if (pendingProduct.nom.trim()) {
       addToStock({
         code: pendingProduct.code,
-        nom: normalizeFreeTextName(pendingProduct.nom.trim())
+        nom: capitalizeFirst(pendingProduct.nom.trim()),
+        imageUrl: pendingProduct.imageUrl || null,
+        nutriScore: pendingProduct.nutriScore || null
       });
     }
     resetScannerState();
@@ -256,8 +278,25 @@ export default function ScannerStockApp() {
               <div className={`product-confirmation ${pendingProduct.found ? "success" : "error"}`}>
                 <h3>{pendingProduct.found ? "✅ Produit détecté !" : "❌ Produit non trouvé"}</h3>
                 <p><strong>Code:</strong> {pendingProduct.code}</p>
-                <p>{pendingProduct.found ? "Confirmer l'ajout du produit :" : "Entrez manuellement le nom du produit :"}</p>
 
+                {pendingProduct.found && (
+                  <div className="off-extra">
+                    {pendingProduct.imageUrl && (
+                      <img
+                        src={pendingProduct.imageUrl}
+                        alt={pendingProduct.nom}
+                        className="off-thumb"
+                      />
+                    )}
+                    {pendingProduct.nutriScore && (
+                      <span className={`nutriscore-badge nutri-${pendingProduct.nutriScore}`}>
+                        {pendingProduct.nutriScore.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <p>{pendingProduct.found ? "Confirmer l'ajout du produit :" : "Entrez manuellement le nom du produit :"}</p>
                 <input
                   type="text"
                   value={pendingProduct.nom}

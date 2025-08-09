@@ -81,6 +81,13 @@
   border-bottom: 2px solid #f1f5f9;
 }
 
+.list-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .list-title {
   color: #333;
   font-size: 1.5rem;
@@ -104,6 +111,23 @@
   color: #667eea;
   font-size: 1rem;
   font-weight: 600;
+}
+
+.add-toggle-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s;
+  font-size: 0.85rem;
+}
+
+.add-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
 }
 
 /* État vide */
@@ -345,42 +369,61 @@
   animation: fadeInUp 0.4s ease forwards;
 }
 
-.stat-card:nth-child(1) { animation-delay: 0.1s; }
-.stat-card:nth-child(2) { animation-delay: 0.2s; }
-.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.stat-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
 
 /* Responsive */
 @media (max-width: 768px) {
   .shopping-list-container {
     padding: 1rem;
   }
-  
+
   .shopping-list-title {
     font-size: 2rem;
   }
-  
+
   .shopping-stats {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .shopping-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .list-header {
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
   }
-  
+
   .shopping-actions {
     flex-direction: column;
   }
-  
+
   .action-button {
     justify-content: center;
+  }
+}
+
+@media (max-width: 620px) {
+  .list-header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .add-toggle-btn {
+    flex: 0 0 auto;
   }
 }
 
@@ -388,20 +431,20 @@
   .shopping-list-title {
     font-size: 1.5rem;
   }
-  
+
   .shopping-list-content {
     padding: 1.5rem;
   }
-  
+
   .shopping-item {
     padding: 1rem;
   }
-  
+
   .shopping-item-header {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .needed-badge {
     align-self: flex-start;
   }
@@ -413,15 +456,167 @@
     background: white !important;
     color: black !important;
   }
-  
+
   .shopping-actions,
   .shopping-stats {
     display: none;
   }
-  
+
   .shopping-item {
     background: white !important;
     border: 1px solid #ddd !important;
     break-inside: avoid;
   }
+}
+
+.manual-add-form {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.manual-add-form .suggest-wrapper {
+  flex: 1 1 320px;
+  min-width: 0; /* évite débordement */
+}
+
+.manual-add-form .qty-input {
+  flex: 0 0 110px;
+  width: 110px;
+  padding: 0.75rem 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f2937;
+  background: #fff;
+  text-align: center;
+  appearance: textfield;
+}
+
+.manual-add-form .qty-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+}
+
+.manual-add-form .qty-input::-webkit-inner-spin-button,
+.manual-add-form .qty-input::-webkit-outer-spin-button {
+  margin: 0;
+}
+
+.manual-add-form button {
+  flex: 0 0 auto;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s;
+  white-space: nowrap;
+}
+
+.manual-add-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+}
+
+/* Retire anciens styles spécifiques (évite conflits) */
+/*
+.manual-add-form input[type="text"],
+.manual-add-form input[type="number"] {
+  all: unset;
+}
+*/
+
+/* Empile sur petits écrans */
+@media (max-width: 620px) {
+  .manual-add-form {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .manual-add-form .qty-input,
+  .manual-add-form button {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+}
+
+/* Badge "Manuel" séparé du nom */
+.manual-tag {
+  display:inline-block;
+  margin-left:0.5rem;
+  background:#667eea;
+  color:#fff;
+  padding:0.2rem 0.55rem;
+  font-size:0.6rem;
+  font-weight:600;
+  border-radius:6px;
+  letter-spacing:.5px;
+  line-height:1;
+  vertical-align:middle;
+  text-transform:uppercase;
+}
+
+/* Formulaire ajout: ajustements anti-chevauchement */
+.manual-add-form {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.75rem;
+  align-items:flex-start; /* évite que la qty remonte sur l'input nom */
+}
+
+.manual-add-form .suggest-wrapper {
+  flex:1 1 280px;
+  min-width:200px;
+  margin-right: 2rem; /* crée l'écart avec le champ quantité */
+}
+
+/* Quantité – réactiver les flèches et réduire largeur pour libérer de l'espace */
+.manual-add-form .qty-input {
+  flex:0 0 90px;
+  width:90px;
+  padding:0.65rem 0.5rem;
+  border:2px solid #e2e8f0;
+  border-radius:10px;
+  font-size:0.9rem;
+  font-weight:600;
+  color:#1f2937;
+  background:#fff;
+  text-align:center;
+  box-sizing:border-box;
+  /* SUPPRIMER l'ancienne ligne: appearance:textfield; */
+  -webkit-appearance: number-input;
+  appearance: auto;
+  line-height:1;
+}
+
+.manual-add-form .qty-input:focus {
+  outline:none;
+  border-color:#667eea;
+  box-shadow:0 0 0 3px rgba(102,126,234,.25);
+}
+
+/* Réactiver visuellement les spin buttons (WebKit) */
+.manual-add-form .qty-input::-webkit-inner-spin-button,
+.manual-add-form .qty-input::-webkit-outer-spin-button {
+  -webkit-appearance: inner-spin-button;
+  margin:0;
+}
+
+/* Bouton stable (évite compression) */
+.manual-add-form button {
+  flex:0 0 auto;
+}
+
+/* Mobile: empiler proprement */
+@media (max-width:620px){
+  .manual-add-form { flex-direction:column; }
+  .manual-add-form .qty-input,
+  .manual-add-form button { width:100%; }
 }
