@@ -1,10 +1,44 @@
-import React, { useContext } from 'react';
-import 'styles/HomePage.css';
-import { StockContext } from 'context/StockContext';
-import { Link } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { Link } from "react-router-dom";
+import { StockContext } from "../../context/StockContext";
+import "../../styles/HomePage.css";
 
 export default function HomePage() {
   const { stock, idealStock } = useContext(StockContext);
+
+  // Horloge dynamique
+  const [now, setNow] = useState(() => new Date());
+  const [battery, setBattery] = useState({ level: 0.69, charging: false, supported: false });
+
+  useEffect(() => {
+    const timerId = setInterval(() => setNow(new Date()), 30_000);
+
+    const updateBatteryStatus = (batteryManager) => {
+      setBattery({
+        level: batteryManager.level,
+        charging: batteryManager.charging,
+        supported: true,
+      });
+    };
+
+    if ('getBattery' in navigator) {
+      navigator.getBattery().then(batteryManager => {
+        updateBatteryStatus(batteryManager);
+        batteryManager.onlevelchange = () => updateBatteryStatus(batteryManager);
+        batteryManager.onchargingchange = () => updateBatteryStatus(batteryManager);
+      });
+    } else {
+      // Fallback pour PC fixe ou navigateurs non supportés
+      setBattery({ level: 1, charging: true, supported: false });
+    }
+
+    return () => clearInterval(timerId);
+  }, []);
+
+  const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+  // Seed pour relancer animations icônes à chaque montage
+  const [animSeed] = useState(() => Date.now());
   
   // Calculs pour les statistiques
   const totalStock = stock.reduce((sum, item) => sum + item.quantite, 0);
@@ -70,16 +104,65 @@ export default function HomePage() {
             📱 Commencer à scanner
           </Link>
         </div>
+
+        {/* --- Nouveau visuel smartphone (remplace floating-card) --- */}
         <div className="hero-visual">
-          <div className="floating-card">
-            <div className="card-icon">📊</div>
-            <div className="card-content">
-              <div className="card-title">Votre stock en un coup d'œil</div>
-              <div className="card-stats">
-                <span>{totalProducts} produits</span>
-                <span>{totalStock} articles</span>
+          {/* --- Smartphone --- */}
+          <div className="phone-demo" key={animSeed}>
+            <div className="phone-notch"></div>
+            <div className="phone-screen">
+              {/* Status bar */}
+              <div className="cc-status">
+                <div className="cc-time">{timeStr}</div>
+                <div className="cc-bars"></div>
+                <div className="cc-batt">
+                  {battery.charging && '⚡️'} {Math.round(battery.level * 100)}%
+                </div>
+              </div>
+
+              {/* Grille d'icônes */}
+              <div className="app-grid">
+                <Link to="/scanner" className="app-icon ai-scanner">
+                  <span className="emoji">📷</span>
+                  <span className="label">Scanner</span>
+                </Link>
+                <Link to="/stock" className="app-icon ai-stock">
+                  <span className="emoji">📦</span>
+                  <span className="label">Stock</span>
+                </Link>
+                <Link to="/ideal-stock" className="app-icon ai-objectifs">
+                  <span className="emoji">🎯</span>
+                  <span className="label">Objectifs</span>
+                </Link>
+                <Link to="/shopping-list" className="app-icon ai-courses">
+                  <span className="emoji">🛒</span>
+                  <span className="label">Courses</span>
+                </Link>
+              </div>
+
+              <div className="phone-widget">
+                <div className="widget-header">
+                  <span>Aperçu Stock</span>
+                  <span className="widget-dot" />
+                </div>
+                <div className="widget-stats">
+                  <div className="ws-item">
+                    <div className="ws-value">{totalProducts}</div>
+                    <div className="ws-label">Produits</div>
+                  </div>
+                  <div className="ws-item">
+                    <div className="ws-value">{totalStock}</div>
+                    <div className="ws-label">Articles</div>
+                  </div>
+                  <div className="ws-item">
+                    <div className="ws-value">{shoppingNeeded}</div>
+                    <div className="ws-label">À acheter</div>
+                  </div>
+                </div>
+                <Link to="/shopping-list" className="widget-cta">Liste →</Link>
               </div>
             </div>
+            <div className="phone-shadow" />
           </div>
         </div>
       </div>

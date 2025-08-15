@@ -1,3 +1,195 @@
+/* === Unified Button System (override) ===================================== */
+:root {
+  --btn-radius: 12px;
+  --c-primary: #6366f1;
+  --c-primary-hover: #4f46e5;
+  --c-success: #10b981;
+  --c-success-hover: #059669;
+  --c-danger: #dc2626;
+  --c-danger-hover: #b91c1c;
+  --c-neutral: #64748b;
+  --c-neutral-hover: #475569;
+  --c-neutral-bg: #f1f5f9;
+}
+
+.btn,
+.btn-save,
+.btn-cancel,
+.btn-delete,
+.btn-edit,
+.btn-group {
+  position: relative;
+  border: none;
+  border-radius: var(--btn-radius);
+  font-weight: 600;
+  font-size: .9rem;
+  line-height: 1;
+  padding: .85rem 1.25rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  background: var(--c-neutral-bg);
+  color: #1f2734;
+  box-shadow: 0 2px 4px rgba(0,0,0,.08);
+  transition: background .18s, color .18s, box-shadow .18s, transform .18s;
+  text-decoration: none;
+}
+
+.btn-icon-char {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+/* Retirer l’ancienne pulsation (pseudo-éléments) */
+.btn::before,
+.btn-save::before,
+.btn-cancel::before {
+  content: none !important;
+}
+
+/* Variantes */
+.btn-primary,
+.btn-save {
+  background: var(--c-primary);
+  color: #fff;
+}
+.btn-primary:hover,
+.btn-save:hover { background: var(--c-primary-hover); }
+
+.btn-edit {
+  background: var(--c-primary);
+  color: #fff;
+}
+.btn-edit:hover { background: var(--c-primary-hover); }
+
+.btn-success {
+  background: var(--c-success);
+  color: #fff;
+}
+.btn-success:hover { background: var(--c-success-hover); }
+
+.btn-danger,
+.btn-delete {
+  background: var(--c-danger);
+  color: #fff;
+}
+.btn-danger:hover,
+.btn-delete:hover { background: var(--c-danger-hover); }
+
+.btn-neutral,
+.btn-cancel {
+  background: var(--c-neutral);
+  color: #fff;
+}
+.btn-neutral:hover,
+.btn-cancel:hover { background: var(--c-neutral-hover); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--c-neutral);
+  box-shadow: none;
+}
+.btn-ghost:hover {
+  background: var(--c-neutral-bg);
+  color: var(--c-neutral-hover);
+}
+
+/* Icône seule (ex: bouton “X” close) */
+.btn-icon {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 999px;
+  font-size: 1rem;
+  background: var(--c-neutral-bg);
+  color: var(--c-neutral);
+  box-shadow: 0 2px 4px rgba(0,0,0,.08);
+}
+.btn-icon:hover {
+  background: #e2e8f0;
+  color: var(--c-neutral-hover);
+}
+
+/* Variante danger icon (si besoin) */
+.btn-icon.danger {
+  background: var(--c-danger);
+  color: #fff;
+}
+.btn-icon.danger:hover { background: var(--c-danger-hover); }
+
+/* Désactiver toute animation / translation pour .btn-icon.close */
+.btn-icon.close,
+.btn-icon.close:hover,
+.btn-icon.close:active {
+  transform: none !important;
+  box-shadow: none !important;
+  transition: background .18s, color .18s;
+}
+
+/* Interaction générique (hors close) */
+.btn:not(.close):hover,
+.btn-save:hover,
+.btn-cancel:hover,
+.btn-delete:hover,
+.btn-edit:hover,
+.btn-group:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px -6px rgba(0,0,0,.25);
+}
+
+.btn:active,
+.btn-save:active,
+.btn-cancel:active,
+.btn-delete:active,
+.btn-edit:active,
+.btn-group:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0,0,0,.18);
+}
+
+/* Quantité: harmoniser (si tu veux remplacer le gris foncé actuel) */
+.quantity-badge {
+  background: var(--c-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: .95rem;
+  min-width: 46px;
+  padding: .55rem .9rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 10px -2px rgba(99,102,241,.45);
+}
+
+/* Mini bouton (ex: .btn-cancel.small) */
+.btn-cancel.small,
+.btn.small {
+  padding: .55rem .85rem;
+  font-size: .75rem;
+  min-height: 0;
+}
+
+/* Accessibilité focus */
+.btn:focus-visible,
+.btn-icon:focus-visible {
+  outline: 3px solid #c7d2fe;
+  outline-offset: 2px;
+}
+
+/* Option: neutraliser transitions globales pour .btn-icon.close */
+.btn-icon.close {
+  background: #f1f5f9;
+  color: #1f2937;
+  border: 1px solid #e2e8f0;
+}
+.btn-icon.close:hover {
+  background: #e2e8f0;
+  color: #111827;
+}
+
+/* --- Fin du système de boutons unifié --- */
+
+/* --- Ancien code (à conserver pour référence) --- */
 .stock-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -430,6 +622,125 @@
   padding: 0 0.5rem;
 }
 
+/* --- Nouveau thème toolbar (remplace l’ancien) --- */
+.stock-toolbar {
+  background:#ffffff;
+  border:1px solid #e2e8f0;
+  border-radius:30px;               /* même arrondi que navbar desktop */
+  padding:0.75rem 1.25rem;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:.75rem;
+  row-gap:.65rem;
+  margin:0 0 2.25rem;               /* retire marge négative */
+  box-shadow:0 10px 30px -12px rgba(0,0,0,.15);
+}
+
+.stock-toolbar > .st-left,
+.stock-toolbar > .st-right {
+  display:flex;
+  align-items:center;
+  gap:.65rem;
+}
+
+.stock-toolbar > .st-left { flex:1 1 520px; min-width:320px; }
+.stock-toolbar > .st-right { flex:0 0 auto; }
+
+.stock-toolbar .st-input,
+.stock-toolbar .st-select {
+  height:40px;
+  line-height:40px;
+  border:1px solid #cbd5e1;
+  background:#fff;
+  border-radius:14px;
+  padding:0 .9rem;
+  font-size:.9rem;
+  font-weight:500;
+  color:#1f2937;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+  transition:.25s;
+}
+.stock-toolbar .st-input:focus,
+.stock-toolbar .st-select:focus {
+  outline:none;
+  border-color:#667eea;
+  box-shadow:0 0 0 3px #667eea33;
+}
+
+.stock-toolbar .st-btn {
+  height:40px;
+  padding:0 .95rem;
+  border:none;
+  border-radius:14px;
+  font-size:.8rem;
+  font-weight:600;
+  cursor:pointer;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:#fff;
+  letter-spacing:.4px;
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  box-shadow:0 4px 14px -4px rgba(102,126,234,.45);
+  transition:.25s;
+}
+.stock-toolbar .st-btn:hover { transform:translateY(-2px); box-shadow:0 8px 22px -6px rgba(102,126,234,.55); }
+.stock-toolbar .st-btn:active { transform:translateY(0); }
+
+.stock-toolbar .st-toggle {
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  padding:0 .85rem;
+  height:40px;
+  font-size:.75rem;
+  font-weight:600;
+  color:#475569;
+  background:#f1f5f9;
+  border:1px solid #e2e8f0;
+  border-radius:14px;
+  cursor:pointer;
+  user-select:none;
+  transition:.25s;
+}
+.stock-toolbar .st-toggle:hover { background:#e2e8f5; }
+.stock-toolbar .st-toggle input { margin:0; }
+
+.stock-toolbar form {
+  width:100%;
+  display:flex;
+  gap:.6rem;
+  margin-top:.6rem;
+}
+
+@media (max-width:800px){
+  .stock-toolbar { border-radius:22px; padding:.85rem .9rem; }
+  .stock-toolbar > .st-left,
+  .stock-toolbar > .st-right { flex:1 1 100%; }
+  .stock-toolbar .st-right { justify-content:flex-start; }
+  .stock-toolbar form { flex-direction:column; }
+  .stock-toolbar form .st-btn { width:100%; justify-content:center; }
+}
+
+/* Vue compacte */
+.stock-grid.compact .product-card {
+  padding:1rem;
+}
+.stock-grid.compact .product-name {
+  font-size:1rem;
+  max-width:210px;
+}
+.stock-grid.compact .quantity-badge {
+  font-size:.95rem;
+  padding:.4rem .8rem;
+  min-width:42px;
+}
+.stock-grid.compact .product-thumb.inline {
+  width:48px;
+  height:48px;
+}
+
 /* Responsive amélioré */
 @media (max-width: 768px) {
   .stock-container {
@@ -672,3 +983,68 @@
   .ns-letter.active { transform:scale(1.18); }
   .product-thumb.inline { width:50px; height:50px; }
 }
+
+/* --- Groupes (titre en blanc) --- */
+.group-block { margin:0 0 2.5rem; }
+.group-title {
+  color:#fff;
+  font-size:1.6rem;
+  font-weight:700;
+  margin:0 0 1.2rem;
+  letter-spacing:.5px;
+  display:flex;
+  align-items:center;
+  gap:.55rem;
+  text-shadow:0 2px 8px rgba(0,0,0,.35);
+}
+.group-title::before {
+  content:"📂";
+  font-size:1.25rem;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));
+}
+
+/* Assignation rapide de groupe */
+.group-assign {
+  display:flex;
+  gap:.55rem;
+  margin-top:.75rem;
+  align-items:stretch;
+}
+.group-assign select {
+  flex:1 1 auto;
+  height:42px;
+  border:1px solid #cbd5e1;
+  background:#fff;
+  border-radius:10px;
+  padding:0 .65rem;
+  font-size:.85rem;
+  font-weight:500;
+  color:#1f2937;
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
+  transition:.25s;
+}
+.group-assign select:focus {
+  outline:none;
+  border-color:#667eea;
+  box-shadow:0 0 0 3px #667eea33;
+}
+.btn-group,
+.action-buttons .btn-group {
+  background: var(--c-neutral-bg);
+  color: #1f2734;
+}
+.btn-group:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px -6px rgba(0,0,0,.25);
+  background: #e2e8f0;
+  color: var(--c-neutral-hover);
+}
+.btn-group:active { transform:translateY(0); }
+.btn-cancel.small {
+  padding:.55rem .85rem;
+  font-size:.7rem;
+  min-height:auto;
+}
+
+/* Compacité: ajuster le bouton groupe */
+.stock-grid.compact .btn-group { padding:.55rem .85rem; min-height:40px; }

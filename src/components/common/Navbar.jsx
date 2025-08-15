@@ -8,7 +8,7 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <Link to="/" className="nav-title-link" onClick={close}>
+        <Link to="/" className="nav-title-link" onClick={close} style={{ textDecoration: 'none' }}>
           <div className="nav-title gradient-logo">HomeStockApp</div>
         </Link>
         <button
@@ -21,11 +21,11 @@ export default function Navbar() {
           <span />
         </button>
         <ul className={'nav-menu' + (open ? ' show' : '')}>
-          <li><NavLink onClick={close} to="/" end className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Accueil</NavLink></li>
-          <li><NavLink onClick={close} to="/scanner" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Scanner</NavLink></li>
-          <li><NavLink onClick={close} to="/stock" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Stock</NavLink></li>
-          <li><NavLink onClick={close} to="/ideal-stock" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Objectifs</NavLink></li>
-          <li><NavLink onClick={close} to="/shopping-list" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}>Courses</NavLink></li>
+          <li><NavLink onClick={close} to="/" end className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')} style={{ textDecoration: 'none' }}>Accueil</NavLink></li>
+          <li><NavLink onClick={close} to="/scanner" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')} style={{ textDecoration: 'none' }}>Scanner</NavLink></li>
+          <li><NavLink onClick={close} to="/stock" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')} style={{ textDecoration: 'none' }}>Stock</NavLink></li>
+          <li><NavLink onClick={close} to="/ideal-stock" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')} style={{ textDecoration: 'none' }}>Objectifs</NavLink></li>
+          <li><NavLink onClick={close} to="/shopping-list" className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')} style={{ textDecoration: 'none' }}>Courses</NavLink></li>
         </ul>
       </div>
     </nav>
